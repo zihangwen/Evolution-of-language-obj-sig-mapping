@@ -1,1 +1,2 @@
-# Evolution-of-language-obj-sig-mapping 
+# Evolution of language
+object signal mapping project 
