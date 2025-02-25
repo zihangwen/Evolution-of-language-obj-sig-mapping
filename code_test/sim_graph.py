@@ -1,0 +1,51 @@
+import numpy as np
+from dataclasses import dataclass
+import copy
+import time
+import os
+import sys
+from utilities import *
+from model import Config, LanguageModelNorm, LanguageModelSoftmax, SimulationGraph
+
+
+if __name__ == "__main__":
+    # num_objects = int(sys.argv[1])
+    # num_sounds = int(sys.argv[2])
+    # num_languages = int(sys.argv[3])
+    # model_name = sys.argv[4]
+    # graph_path = sys.argv[5]
+    # num_runs = int(sys.argv[6])
+    # out_path_base = sys.argv[7]
+    # n_trial = int(sys.argv[8])
+    num_objects = 5
+    num_sounds = 5
+    num_languages = None
+    model_name = "softmax"
+    graph_path = "graphs/two_deme_G_combined_14.txt"
+    num_runs = 400
+    out_path_base = "results_test"
+    n_trial = 0
+
+    num_trials = 1
+    config = Config(num_objects, num_sounds, num_languages)
+    if model_name == "norm":
+        LangModel = LanguageModelNorm
+    elif model_name == "softmax":
+        LangModel = LanguageModelSoftmax
+
+    for i_trial in range(num_trials):
+        time_start = time.time()
+        
+        graph_name = os.path.basename(graph_path).split(".")[0]
+
+        sim = SimulationGraph(config, graph_path, LangModel)
+        sim.run(num_runs)
+        time_end = time.time()
+        print("graph: %s, trial: %d, time cost: %.2f" % (graph_name, i_trial, time_end - time_start))
+
+        logger = np.array(sim.get_logger())
+        out_path = os.path.join(out_path_base, model_name, graph_name)
+        os.makedirs(out_path, exist_ok=True)
+        np.savetxt(os.path.join(out_path, "%d.txt" %(n_trial*num_trials+i_trial)), logger, fmt='%g')
+
+    print("hello world!")
