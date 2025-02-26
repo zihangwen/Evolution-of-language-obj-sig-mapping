@@ -63,7 +63,7 @@ if __name__ == "__main__":
     num_sounds = 5
     model_name_list = ["norm", "softmax"]
     sample_times_list = [1, 5, 10, 20, 40, 100]
-    temperature_list = [0.1, 0.5, 1, 2, 5, 10]
+    temperature_list = [1, 2, 5, 10]
 
     graph_folder_name = "temp_sample_size"
     graph_path_list = [f"networks/{graph_folder_name}/" + a for a in os.listdir(f"/home/zihangw/EvoComm/networks/{graph_folder_name}")]
