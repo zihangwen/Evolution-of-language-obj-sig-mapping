@@ -1,16 +1,17 @@
 import numpy as np
 from utilities import *
 from dataclasses import dataclass
-from typing import Type, List
+from typing import Type, List, Optional
 
 
 @dataclass
 class Config:
     obj : int # number of objects
     sound : int # number of sounds
-    n_languages : int # number of languages
+    n_languages : Optional[int] = None # number of languages
     sample_times : int = 100
     self_communication : bool = False # whether self communication is allowed
+    temperature : Optional[float] = 1.0
 
 
 class LanguageModel:
@@ -24,7 +25,8 @@ class LanguageModel:
     def initialize_language(self) -> None:
         pass
     
-    def update_language(self, sample_matrix : np.array = None) -> None:
+    def update_language(self, sample_matrix : np.array = None,
+                        temperature : Optional[float] = None) -> None:
         pass
     
     def sample_language(self, number_samples : int) -> np.array:
@@ -43,12 +45,14 @@ class LanguageModelSoftmax(LanguageModel):
         self.Q = np.random.randn(self.sound, self.obj)
         self.update_language()
     
-    def update_language(self, sample_matrix : np.array = None) -> None:
+    def update_language(self, sample_matrix : np.array = None,
+                        temperature : Optional[float] = 1.0) -> None:
         if sample_matrix is not None:
             self.P = sample_matrix
             self.Q = sample_matrix.T
-        self.P = Softmax(self.P)
-        self.Q = Softmax(self.Q)
+        assert temperature is not None
+        self.P = Softmax(self.P, temperature)
+        self.Q = Softmax(self.Q, temperature)
 
 
 class LanguageModelNorm(LanguageModel):
@@ -60,7 +64,8 @@ class LanguageModelNorm(LanguageModel):
         self.Q = np.random.uniform(0, 1, (self.sound, self.obj))
         self.update_language()
 
-    def update_language(self, sample_matrix : np.array = None) -> None:
+    def update_language(self, sample_matrix : np.array = None,
+                        temperature : Optional[float] = None) -> None:
         if sample_matrix is not None:
             self.P = sample_matrix
             self.Q = sample_matrix.T
@@ -77,7 +82,8 @@ class LanguageModelNormEPS(LanguageModel):
         self.Q = np.random.uniform(0, 1, (self.sound, self.obj))
         self.update_language()
 
-    def update_language(self, sample_matrix : np.array = None) -> None:
+    def update_language(self, sample_matrix : np.array = None,
+                        temperature : Optional[float] = None) -> None:
         if sample_matrix is not None:
             self.P = sample_matrix
             self.Q = sample_matrix.T
@@ -110,6 +116,7 @@ class Simulation():
         self.n_languages = config.n_languages
         self.sample_times = config.sample_times
         self.self_communication = config.self_communication
+        self.temperature = config.temperature
         self.logger = []
 
         self.languages = [language_model(language_id, self.obj, self.sound) for language_id in range(self.n_languages)]
@@ -140,7 +147,7 @@ class Simulation():
         language_birth = self.get_language(birth_id)
         language_death = self.get_language(death_id)
         sample_matrix = language_birth.sample_language(self.sample_times)
-        language_death.update_language(sample_matrix)
+        language_death.update_language(sample_matrix, self.temperature)
 
     def birth_death(self) -> None:
         fitness_vector = self.get_fitness()

@@ -19,8 +19,9 @@ def load_G(f):
         return G
     
 
-def Softmax(x : np.array, dim : int = -1) -> np.array:
-    return np.exp(x) / np.exp(x).sum(axis=dim, keepdims=True)
+def Softmax(x : np.array, temperature : float = 1.0, dim : int = -1) -> np.array:
+    x = x - x.min(axis=dim, keepdims=True)
+    return np.exp(x/temperature) / np.exp(x/temperature).sum(axis=dim, keepdims=True)
 
 
 def Normalize(x : np.array, dim : int = -1) -> np.array:

@@ -11,12 +11,13 @@ from model import Config, LanguageModelNorm, LanguageModelSoftmax, SimulationGra
 if __name__ == "__main__":
     num_objects = int(sys.argv[1])
     num_sounds = int(sys.argv[2])
-    num_languages = int(sys.argv[3])
-    model_name = sys.argv[4]
-    graph_path = sys.argv[5]
-    num_runs = int(sys.argv[6])
-    out_path_base = sys.argv[7]
-    n_trial = int(sys.argv[8])
+    model_name = sys.argv[3]
+    graph_path = sys.argv[4]
+    num_runs = int(sys.argv[5])
+    out_path_base = sys.argv[6]
+    sample_times = int(sys.argv[7])
+    temperature = float(sys.argv[8])
+    n_trial = int(sys.argv[9])
     # num_objects = 5
     # num_sounds = 5
     # num_languages = 10
@@ -27,7 +28,8 @@ if __name__ == "__main__":
     # n_trial = 0
 
     num_trials = 10
-    config = Config(num_objects, num_sounds, num_languages)
+    config = Config(num_objects, num_sounds,
+                    sample_times = sample_times, temperature = temperature)
     if model_name == "norm":
         LangModel = LanguageModelNorm
     elif model_name == "softmax":
@@ -46,6 +48,6 @@ if __name__ == "__main__":
         logger = np.array(sim.get_logger())
         out_path = os.path.join(out_path_base, model_name, graph_name)
         os.makedirs(out_path, exist_ok=True)
-        np.savetxt(os.path.join(out_path, "%d.txt" %(n_trial*num_trials+i_trial)), logger, fmt='%g')
+        np.savetxt(os.path.join(out_path, f"st_{sample_times}_temp_{temperature:.1f}_{n_trial*num_trials+i_trial}.txt"), logger, fmt='%g')
 
     print("hello world!")
