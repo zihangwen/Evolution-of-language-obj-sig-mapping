@@ -44,38 +44,38 @@ if __name__ == "__main__":
     #         for graph_path in graph_path_list:
     #             f.write("%d %d %d %s %s %d %s\n"%(num_objects, num_sounds, num_languages, model_name, graph_path, num_runs, out_path_base))
 
+    num_objects = 5
+    num_sounds = 5
+    model_name_list = ["norm", "softmax"]
+    graph_folder_name = "bottleneck_demes"
+    graph_path_list = [f"networks/{graph_folder_name}/" + a for a in os.listdir(f"/home/zihangw/EvoComm/networks/{graph_folder_name}")]
+    num_runs = int(100_000)
+    out_path_base = f"results/{graph_folder_name}"
+    # n_trial = range(10)
+    sample_times = 100
+    temperature = 1.0
+    with open("../param_space/param_bottleneck_demes.txt", "w") as f:
+        for model_name in model_name_list:
+            for graph_path in graph_path_list:
+                f.write(f"{num_objects} {num_sounds} {model_name} {graph_path} {num_runs} {out_path_base} {sample_times} {temperature:.1f}\n")
+
     # num_objects = 5
     # num_sounds = 5
-    # num_languages = 100
     # model_name_list = ["norm", "softmax"]
-    # graph_folder_name = "bottleneck_demes"
+    # sample_times_list = [1, 5, 10, 20, 40, 100]
+    # temperature_list = [1.0, 2.0, 5.0, 10.0]
+
+    # graph_folder_name = "temp_sample_size"
     # graph_path_list = [f"networks/{graph_folder_name}/" + a for a in os.listdir(f"/home/zihangw/EvoComm/networks/{graph_folder_name}")]
     # num_runs = int(50_000)
     # out_path_base = f"results/{graph_folder_name}"
     # # n_trial = range(10)
     
-    # with open("../param_space/param_bottleneck_demes.txt", "w") as f:
+    # with open(f"../param_space/param_{graph_folder_name}.txt", "w") as f:
     #     for model_name in model_name_list:
     #         for graph_path in graph_path_list:
-    #             f.write("%d %d %d %s %s %d %s\n"%(num_objects, num_sounds, num_languages, model_name, graph_path, num_runs, out_path_base))
-
-    num_objects = 5
-    num_sounds = 5
-    model_name_list = ["norm", "softmax"]
-    sample_times_list = [1, 5, 10, 20, 40, 100]
-    temperature_list = [1, 2, 5, 10]
-
-    graph_folder_name = "temp_sample_size"
-    graph_path_list = [f"networks/{graph_folder_name}/" + a for a in os.listdir(f"/home/zihangw/EvoComm/networks/{graph_folder_name}")]
-    num_runs = int(50_000)
-    out_path_base = f"results/{graph_folder_name}"
-    # n_trial = range(10)
-    
-    with open(f"../param_space/param_{graph_folder_name}.txt", "w") as f:
-        for model_name in model_name_list:
-            for graph_path in graph_path_list:
-                for sample_times in sample_times_list:
-                    for temperature in temperature_list:
-                        f.write(f"{num_objects} {num_sounds} {model_name} {graph_path} {num_runs} {out_path_base} {sample_times} {temperature}\n")
-                        # f.write("%d %d %s %s %d %s\n"%(num_objects, num_sounds, model_name, graph_path, num_runs, out_path_base))
+    #             for sample_times in sample_times_list:
+    #                 for temperature in temperature_list:
+    #                     f.write(f"{num_objects} {num_sounds} {model_name} {graph_path} {num_runs} {out_path_base} {sample_times} {temperature}\n")
+    #                     # f.write("%d %d %s %s %d %s\n"%(num_objects, num_sounds, model_name, graph_path, num_runs, out_path_base))
 

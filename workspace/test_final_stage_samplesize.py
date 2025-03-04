@@ -11,13 +11,13 @@ import seaborn as sns
 num_objects = 5
 num_sounds = 5
 
-network_name = "bottleneck_demes"
+network_name = "temp_sample_size"
 model_name_list = ["norm", "softmax"]
 # graph_path_list = ["networks/toy/" + a for a in os.listdir("/home/zihangw/EvoComm/networks/toy")]
-temperature_list = [1.0]
-# temperature_list = [1.0, 2.0, 5.0, 10.0]
-sample_times_list = [100]
-# sample_times_list = [1, 5, 10, 20, 40, 100]
+# temperature_list = [1.0]
+temperature_list = [1.0, 2.0, 5.0, 10.0]
+# sample_times_list = [100]
+sample_times_list = [1, 5, 10, 20, 40, 100]
 
 graph_name_list = [a for a in os.listdir(f"/home/zihangw/EvoComm/results/{network_name}/norm")]
 # graph_name_list = sorted(graph_name_list, key=lambda s: tuple(map(int, re.findall(r"\d+", s))))
@@ -44,8 +44,6 @@ df_all = pd.DataFrame()
 for model_name in model_name_list:
     # log_dict = {}
     for i_graph in graph_name_list:
-        # log_dict[i_graph] = []
-        deme_number, num_edge_added, beta, graph_rep = tuple(map(int, re.findall(r"-?\d+", i_graph)))
         for sample_times in sample_times_list:
             for temperature in temperature_list:
                 st_name = f"st_{sample_times}_temp_{temperature:.1f}"
@@ -61,10 +59,7 @@ for model_name in model_name_list:
                 log_dict_mean = np.mean(log_list, 0)
                 log_dict_std = np.std(log_list, 0)
                 new_row = pd.DataFrame({
-                    "deme_number": [deme_number],
-                    "num_edge_added": [num_edge_added],
-                    "beta": [beta],
-                    "graph_rep": [graph_rep],
+                    "graph_name": [i_graph],
                     "model": [model_name],
                     "sample_times": [sample_times],
                     "temperature": [temperature],
@@ -77,14 +72,6 @@ for model_name in model_name_list:
                 })
                 df_all = pd.concat([df_all, new_row], ignore_index=True)
     
-    # df = pd.DataFrame(columns=["deme_number", "num_edge_added", "beta", "graph_rep"])
-    # df["num_edge_added"] = num_edge_added_list
-    # df["beta"] = beta_list
-    # df["deme_number"] = 2
-    # df["graph_rep"] = 0
-    # df["model"] = model_name
-
-    # model_dict[model_name] = log_dict
 
 # %%
 # Set style
@@ -122,10 +109,7 @@ for model_name in model_name_list:
 sns.set_theme(style="whitegrid")
 
 # Filter for beta = 0
-df_filtered = df_all[df_all["beta"] == 0]
-
-# Get unique deme_numbers
-deme_numbers = sorted(df_filtered["deme_number"].unique())
+df_filtered = df_all[(df_all["model"] == "softmax")]# & (df_all["sample_times"] == 100)]
 
 # Define y-axis options
 # y_options = ['mean_fitness_mean', 'max_fitness_mean', 'num_langauge_mean']
@@ -135,38 +119,38 @@ y_options = [
     ("num_langauge_mean", "num_langauge_std")
 ]
 
-
 # Create subplots (rows = y-options, columns = deme_number)
-fig, axes = plt.subplots(len(y_options), len(deme_numbers), figsize=(12, 8), sharex='col')
+fig, axes = plt.subplots(len(y_options), len(graph_name_list), figsize=(12 / 3 * len(graph_name_list), 8), sharex='col')
 
 legend_added = False
-for i, deme in enumerate(deme_numbers):
-    df_deme = df_filtered[df_filtered["deme_number"] == deme]  # Filter by deme_number
+for i, i_graph in enumerate(graph_name_list):
+    df_graph = df_filtered[df_filtered["graph_name"] == i_graph]  # Filter by deme_number
     
     for j, (y, y_err) in enumerate(y_options):
         ax = axes[j, i]
-        sns.lineplot(data=df_deme, x="num_edge_added", y=y, hue="model", ax=ax, marker='o', errorbar=("sd"))
-        ax.set_title(f"{y} ({deme} {int(100 / deme)}-Demes)")
-        ax.set_xlabel("num_edge_added")
+        sns.lineplot(data=df_graph, x="temperature", y=y, ax=ax, hue = "sample_times", marker='o', errorbar=("sd"))
+        ax.set_title(f"{y} ({i_graph})")
+        ax.set_xlabel("temperature")
         ax.set_ylabel(y)
 
         # Add shaded error regions manually
-        for model in df_deme["model"].unique():
-            df_model = df_deme[df_deme["model"] == model]
-            ax.fill_between(
-                df_model["num_edge_added"], 
-                df_model[y] - df_model[y_err], 
-                df_model[y] + df_model[y_err], 
-                alpha=0.2  # Transparency
-            )
+        # for temperature in df_graph["temperature"].unique():
+        #     df_temp = df_graph[df_graph["temperature"] == temperature]
+        #     ax.fill_between(
+        #         df_temp["sample_times"], 
+        #         df_temp[y] - df_temp[y_err], 
+        #         df_temp[y] + df_temp[y_err], 
+        #         alpha=0.2  # Transparency
+        #     )
 
 
-        if not legend_added:
-            legend_added = True
-        else:
-            ax.legend_.remove()  # Remove legend from all other plots
+        # if not legend_added:
+        #     legend_added = True
+        # else:
+        #     ax.legend_.remove()  # Remove legend from all other plots
 
 # Adjust layout
 plt.tight_layout()
 plt.show()
-fig.savefig(os.path.join(figure_path, f"final_stage.jpg"), dpi=600)
+fig.savefig(os.path.join(figure_path, f"final_stage_sm.jpg"), dpi=600)
+# %%
