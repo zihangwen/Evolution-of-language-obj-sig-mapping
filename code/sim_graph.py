@@ -5,7 +5,8 @@ import time
 import os
 import sys
 from utilities import *
-from model import Config, LanguageModelNorm, LanguageModelSoftmax, SimulationGraph
+from model import Config, LanguageModelNorm, LanguageModelSoftmax
+from simulations import SimulationGraph
 
 
 if __name__ == "__main__":
