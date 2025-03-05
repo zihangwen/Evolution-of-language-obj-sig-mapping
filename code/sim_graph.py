@@ -41,7 +41,8 @@ if __name__ == "__main__":
         
         graph_name = os.path.basename(graph_path).split(".")[0]
 
-        sim = SimulationGraph(config, graph_path, LangModel)
+        sim = SimulationGraph(config, graph_path)
+        sim.initialize(LangModel)
         sim.run(num_runs)
         time_end = time.time()
         print("graph: %s, trial: %d, time cost: %.2f" % (graph_name, i_trial, time_end - time_start))

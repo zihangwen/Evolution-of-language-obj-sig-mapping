@@ -1,8 +1,12 @@
+# %%
 import numpy as np
 from utilities import *
 from dataclasses import dataclass
-from typing import Type, List, Optional
-import einops
+from typing import Type, List, Optional, Union
+# import einops
+
+
+MAIN = __name__ == "__main__"
 
 
 @dataclass
@@ -20,15 +24,15 @@ class LanguageModel:
         self.obj, self.sound = obj, sound
         self.language_id = language_id
         self.P, self.Q = None, None
-        self.initialize_language()
         self.fitness = 0
+        self.group_id = self.language_id
     
     def initialize_language(self) -> None:
-        pass
+        raise NotImplementedError()
     
-    def update_language(self, sample_matrix : np.array = None,
+    def update_language(self, sample_matrix : Union[np.array, None] = None,
                         temperature : Optional[float] = None) -> None:
-        pass
+        raise NotImplementedError()
     
     def sample_language(self, number_samples : int) -> np.array:
         sample_matrix = np.zeros([self.obj, self.sound])
@@ -37,9 +41,34 @@ class LanguageModel:
         return sample_matrix
 
     @property
-    def self_comm_payoff(self):
+    def self_comm_payoff(self) -> float:
         assert self.P is not None and self.Q is not None
-        directional_comm(self, self)
+        return directional_comm(self, self)
+
+
+class LanguageModelStabilized(LanguageModel):
+    def __init__(self, language_id : int, obj : int, sound : int) -> None:
+        super().__init__(language_id, obj, sound)
+        
+    def initialize_language(self, language: Union[LanguageModel, None] = None) -> None:
+        # stabilized language model
+        if language is None:
+            self.P = np.zeros([self.obj, self.sound])
+            self.Q = np.zeros([self.sound, self.obj])
+
+            indices = np.random.randint(self.sound, size=(self.obj,))
+            self.P[np.arange(self.obj), indices] = 1
+            self.Q = NormalizeEPS(self.P.T)
+        else:
+            self.update_language(language)
+    
+    def update_language(
+            self,
+            language: LanguageModel,
+    ) -> None:
+        self.group_id = language.group_id
+        self.P = language.P
+        self.Q = language.Q
 
 
 class LanguageModelSoftmax(LanguageModel):
@@ -103,8 +132,8 @@ class LanguageModelNormEPS(LanguageModel):
 
 def directional_comm(language1 : LanguageModel, language2 : LanguageModel) -> float:
     # return np.einsum('...ij,...ji->...', P, Q)
-    # return np.einsum('ij,ji', language1.P, language2.Q)
-    return einops.einsum(language1.P, language2.Q, 'obj sig, sig obj ->')
+    return np.einsum('ij,ji', language1.P, language2.Q)
+    # return einops.einsum(language1.P, language2.Q, 'obj sig, sig obj ->')
 
 # def PairPayoff(language1 : LanguageModel, language2 : LanguageModel) -> float:
 #     payoff1 = np.einsum('...ij,...ji->...', language1.P, language2.Q)
@@ -121,3 +150,9 @@ def similar_language_check(language1: LanguageModel, language2: LanguageModel) -
 def stable_check(language: LanguageModel) -> bool:
     # TODO: check whether the language is stabilized
     pass
+
+
+if MAIN:
+    lang0 = LanguageModelStabilized(0, 5, 5)
+    lang1 = LanguageModelStabilized(1, 5, 5)
+# %%

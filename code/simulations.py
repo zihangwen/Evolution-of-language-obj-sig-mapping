@@ -4,22 +4,22 @@ from dataclasses import dataclass
 from typing import Type, List, Optional
 from model import LanguageModel, Config, directional_comm, similar_language_check
 
+
 class Simulation():
-    def __init__(self, config : Config, language_model : Type[LanguageModel] = LanguageModel) -> None:
+    def __init__(self, config : Config) -> None:
         self.config = config
         self.obj, self.sound = config.obj, config.sound
         self.n_languages = config.n_languages
         self.sample_times = config.sample_times
         self.self_communication = config.self_communication
         self.temperature = config.temperature
+        
+    def initialize(self, language_model : Type[LanguageModel] = LanguageModel) -> None:
         self.logger = []
-
         self.languages = [language_model(language_id, self.obj, self.sound) for language_id in range(self.n_languages)]
-        # language_id1 -> language_id2 : payoff_matrix[language_id1, language_id2]
-
-        self.init_simulation()
-    
-    def init_simulation(self) -> None:
+        for language in self.languages:
+            language.initialize_language()
+        # language_id1 -> language_id2 : payoff_matrix[language_id1, language_id2]    
         self.payoff_matrix = np.zeros((self.n_languages, self.n_languages))
         self.update_payoff_all()
         self.assign_fitness()
@@ -117,11 +117,11 @@ class Simulation():
     
 
 class SimulationGraph(Simulation):
-    def __init__(self, config : Config, graph_file : str, language_model : Type[LanguageModel] = LanguageModel) -> None:
+    def __init__(self, config : Config, graph_file : str) -> None:
         self.graph = load_G(graph_file)
         self.n_neighbors = {k: len(v) for k, v in self.graph.items()}
         config.n_languages = len(self.graph)
-        super().__init__(config, language_model)
+        super().__init__(config)
             
     def birth_death(self) -> None:
         fitness_vector = self.get_fitness()
@@ -156,6 +156,68 @@ class SimulationGraph(Simulation):
             self.get_language(language_id).fitness = sum_payoff[language_id] / self.n_neighbors[language_id]
 
 
+class SimulationGraphInvade(SimulationGraph):
+    def __init__(self, config : Config, graph_file : str, language_model : Type[LanguageModel] = LanguageModel) -> None:
+        super().__init__(config, graph_file)
+        self.groups = list(range(self.n_languages))
+
+    def initialize(
+            self,
+            language_model : Type[LanguageModel] = LanguageModel,
+            lang_init : Optional[LanguageModel] = None,
+            lang_invade : Optional[LanguageModel] = None
+    ) -> None:
+        self.logger = []
+
+        self.languages = [language_model(language_id, self.obj, self.sound) for language_id in range(self.n_languages)]
+        if lang_init is not None:
+            for language in self.languages:
+                language.initialize_language(lang_init)
+        else:
+            for language in self.languages:
+                language.initialize_language()
+        
+        if lang_invade is not None:
+            invade_pos = np.random.randint(self.n_languages)
+            self.get_language(invade_pos).update_language(lang_invade)
+        
+        self.groups = [language.group_id for language in self.languages]
+
+        # language_id1 -> language_id2 : payoff_matrix[language_id1, language_id2]    
+        self.payoff_matrix = np.zeros((self.n_languages, self.n_languages))
+        self.update_payoff_all()
+        self.assign_fitness()
+        self.update_logger(-1)
+    
+    def update_language(self, birth_id : int, death_id : int) -> None:
+        language_birth = self.get_language(birth_id)
+        language_death = self.get_language(death_id)
+        if language_birth.group_id == language_death.group_id:
+            return
+        language_death.update_language(language_birth)
+        self.groups[death_id] = language_death.group_id
+        self.update_payoff_one(death_id)
+        # self.update_payoff_all()
+        self.assign_fitness()
+    
+    def run(self) -> None:
+        i_t = 0
+        while self.unique_groups.size > 1:
+            # print(i_t)
+            # b-d process
+            birth_id, death_id = self.birth_death()
+            # update language
+            self.update_language(birth_id, death_id)
+            # update payoff
+            self.update_logger(i_t)
+            i_t += 1
+        
+        return self.unique_groups, i_t
+    
+    @property
+    def unique_groups(self) -> int:
+        return np.unique(self.groups)
+        
 # class Simulation:
 #     def __init__(self, config : Config, graph_file : str) -> None:
 #         self.config = config

@@ -44,20 +44,20 @@ if __name__ == "__main__":
     #         for graph_path in graph_path_list:
     #             f.write("%d %d %d %s %s %d %s\n"%(num_objects, num_sounds, num_languages, model_name, graph_path, num_runs, out_path_base))
 
-    num_objects = 5
-    num_sounds = 5
-    model_name_list = ["norm", "softmax"]
-    graph_folder_name = "bottleneck_demes"
-    graph_path_list = [f"networks/{graph_folder_name}/" + a for a in os.listdir(f"/home/zihangw/EvoComm/networks/{graph_folder_name}")]
-    num_runs = int(100_000)
-    out_path_base = f"results/{graph_folder_name}"
-    # n_trial = range(10)
-    sample_times = 100
-    temperature = 1.0
-    with open("../param_space/param_bottleneck_demes.txt", "w") as f:
-        for model_name in model_name_list:
-            for graph_path in graph_path_list:
-                f.write(f"{num_objects} {num_sounds} {model_name} {graph_path} {num_runs} {out_path_base} {sample_times} {temperature:.1f}\n")
+    # num_objects = 5
+    # num_sounds = 5
+    # model_name_list = ["norm", "softmax"]
+    # graph_folder_name = "bottleneck_demes"
+    # graph_path_list = [f"networks/{graph_folder_name}/" + a for a in os.listdir(f"/home/zihangw/EvoComm/networks/{graph_folder_name}")]
+    # num_runs = int(100_000)
+    # out_path_base = f"results/{graph_folder_name}"
+    # # n_trial = range(10)
+    # sample_times = 100
+    # temperature = 1.0
+    # with open("../param_space/param_bottleneck_demes.txt", "w") as f:
+    #     for model_name in model_name_list:
+    #         for graph_path in graph_path_list:
+    #             f.write(f"{num_objects} {num_sounds} {model_name} {graph_path} {num_runs} {out_path_base} {sample_times} {temperature:.1f}\n")
 
     # num_objects = 5
     # num_sounds = 5
@@ -79,3 +79,20 @@ if __name__ == "__main__":
     #                     f.write(f"{num_objects} {num_sounds} {model_name} {graph_path} {num_runs} {out_path_base} {sample_times} {temperature}\n")
     #                     # f.write("%d %d %s %s %d %s\n"%(num_objects, num_sounds, model_name, graph_path, num_runs, out_path_base))
 
+    num_objects = 5
+    num_sounds = 5
+    graph_folder_name = "bottleneck_demes"
+    graph_path_list = [f"networks/{graph_folder_name}/" + a for a in os.listdir(f"/home/zihangw/EvoComm/networks/{graph_folder_name}")]
+
+    graph_folder_name = "graphs"
+    graph_path_list += [f"networks/{graph_folder_name}/" + a for a in os.listdir(f"/home/zihangw/EvoComm/networks/{graph_folder_name}")]
+    
+    num_trials = int(10_000)
+    with open("../param_space/param_bottleneck_demes_invade.txt", "w") as f:
+            for graph_path in graph_path_list:
+                f.write(f"{num_objects} {num_sounds} {graph_path} {num_trials}\n")
+
+# num_objects=$(sed -n "${line}p" ${param_file} | awk '{print $1}')
+# num_sounds=$(sed -n "${line}p" ${param_file} | awk '{print $2}')
+# graph_path=$(sed -n "${line}p" ${param_file} | awk '{print $4}')
+# num_trials=$(sed -n "${line}p" ${param_file} | awk '{print $5}')
