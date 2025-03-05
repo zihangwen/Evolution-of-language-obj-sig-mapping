@@ -2,7 +2,7 @@ import numpy as np
 from utilities import *
 from dataclasses import dataclass
 from typing import Type, List, Optional
-from model import LanguageModel, Config
+from model import LanguageModel, Config, directional_comm, similar_language_check
 
 class Simulation():
     def __init__(self, config : Config, language_model : Type[LanguageModel] = LanguageModel) -> None:
@@ -154,24 +154,6 @@ class SimulationGraph(Simulation):
         sum_payoff = 0.5 * (np.einsum('ij->i', self.payoff_matrix) + np.einsum('ij->j', self.payoff_matrix))
         for language_id in range(self.n_languages):
             self.get_language(language_id).fitness = sum_payoff[language_id] / self.n_neighbors[language_id]
-
-
-def directional_comm(language1 : LanguageModel, language2 : LanguageModel) -> float:
-    # return np.einsum('...ij,...ji->...', P, Q)
-    return np.einsum('ij,ji', language1.P, language2.Q)
-
-
-# def PairPayoff(language1 : LanguageModel, language2 : LanguageModel) -> float:
-#     payoff1 = np.einsum('...ij,...ji->...', language1.P, language2.Q)
-#     payoff2 = np.einsum('...ij,...ji->...', language2.P, language1.Q)
-#     return 0.5 * (payoff1 + payoff2)
-
-
-def similar_language_check(language1: LanguageModel, language2: LanguageModel) -> bool:
-    if np.allclose(language1.P, language2.P, rtol=0, atol=EPS) and np.allclose(language1.Q, language2.Q, rtol=0, atol=EPS):
-        return True
-    else:
-        return False
 
 
 # class Simulation:

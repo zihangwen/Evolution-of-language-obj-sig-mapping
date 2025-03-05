@@ -90,3 +90,20 @@ class LanguageModelNormEPS(LanguageModel):
         self.P = NormalizeEPS(self.P)
         self.Q = NormalizeEPS(self.Q)
 
+
+def directional_comm(language1 : LanguageModel, language2 : LanguageModel) -> float:
+    # return np.einsum('...ij,...ji->...', P, Q)
+    return np.einsum('ij,ji', language1.P, language2.Q)
+
+
+# def PairPayoff(language1 : LanguageModel, language2 : LanguageModel) -> float:
+#     payoff1 = np.einsum('...ij,...ji->...', language1.P, language2.Q)
+#     payoff2 = np.einsum('...ij,...ji->...', language2.P, language1.Q)
+#     return 0.5 * (payoff1 + payoff2)
+
+
+def similar_language_check(language1: LanguageModel, language2: LanguageModel) -> bool:
+    if np.allclose(language1.P, language2.P, rtol=0, atol=EPS) and np.allclose(language1.Q, language2.Q, rtol=0, atol=EPS):
+        return True
+    else:
+        return False
