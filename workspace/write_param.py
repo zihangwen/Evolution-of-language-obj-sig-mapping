@@ -78,17 +78,32 @@ if __name__ == "__main__":
     #                 for temperature in temperature_list:
     #                     f.write(f"{num_objects} {num_sounds} {model_name} {graph_path} {num_runs} {out_path_base} {sample_times} {temperature}\n")
     #                     # f.write("%d %d %s %s %d %s\n"%(num_objects, num_sounds, model_name, graph_path, num_runs, out_path_base))
+    
+    # ----- param_bottleneck_demes_invade ----- #
+    # num_objects = 5
+    # num_sounds = 5
+    # graph_folder_name = "bottleneck_demes"
+    # graph_path_list = [f"networks/{graph_folder_name}/" + a for a in os.listdir(f"/home/zihangw/EvoComm/networks/{graph_folder_name}")]
 
+    # graph_folder_name = "graphs"
+    # graph_path_list += [f"networks/{graph_folder_name}/" + a for a in os.listdir(f"/home/zihangw/EvoComm/networks/{graph_folder_name}")]
+    
+    # num_trials = int(10_000)
+    # with open("../param_space/param_bottleneck_demes_invade.txt", "w") as f:
+    #         for graph_path in graph_path_list:
+    #             f.write(f"{num_objects} {num_sounds} {graph_path} {num_trials}\n")
+    
+    # ----- param_PA_invade ----- #
     num_objects = 5
     num_sounds = 5
-    graph_folder_name = "bottleneck_demes"
+    graph_folder_name = "PA_100"
     graph_path_list = [f"networks/{graph_folder_name}/" + a for a in os.listdir(f"/home/zihangw/EvoComm/networks/{graph_folder_name}")]
 
-    graph_folder_name = "graphs"
+    graph_folder_name = "social_network"
     graph_path_list += [f"networks/{graph_folder_name}/" + a for a in os.listdir(f"/home/zihangw/EvoComm/networks/{graph_folder_name}")]
     
     num_trials = int(10_000)
-    with open("../param_space/param_bottleneck_demes_invade.txt", "w") as f:
+    with open("../param_space/param_PA_invade.txt", "w") as f:
             for graph_path in graph_path_list:
                 f.write(f"{num_objects} {num_sounds} {graph_path} {num_trials}\n")
 
