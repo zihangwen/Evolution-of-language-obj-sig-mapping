@@ -1,5 +1,6 @@
 import numpy as np
 import os
+import re
 
 
 if __name__ == "__main__":
@@ -94,18 +95,46 @@ if __name__ == "__main__":
     #             f.write(f"{num_objects} {num_sounds} {graph_path} {num_trials}\n")
     
     # ----- param_PA_invade ----- #
+    # num_objects = 5
+    # num_sounds = 5
+    # graph_folder_name = "PA_100"
+    # graph_path_list = [f"networks/{graph_folder_name}/" + a for a in os.listdir(f"/home/zihangw/EvoComm/networks/{graph_folder_name}")]
+
+    # graph_folder_name = "social_network"
+    # graph_path_list += [f"networks/{graph_folder_name}/" + a for a in os.listdir(f"/home/zihangw/EvoComm/networks/{graph_folder_name}")]
+    
+    # num_trials = int(10_000)
+    # with open("../param_space/param_PA_invade.txt", "w") as f:
+    #         for graph_path in graph_path_list:
+    #             f.write(f"{num_objects} {num_sounds} {graph_path} {num_trials}\n")
+    
+    # ----- param_regular_invade ----- #
+    # num_objects = 5
+    # num_sounds = 5
+    # graph_folder_name = "paper_regular_100"
+    # graph_path_list = [f"networks/{graph_folder_name}/" + a for a in os.listdir(f"/home/zihangw/EvoComm/networks/{graph_folder_name}")]
+    # graph_path_list = sorted(graph_path_list, key=lambda s: tuple(map(int, re.findall(r"\d+", s))))
+
+    # # graph_path_list = graph_path_list[::5]
+
+    # num_trials = int(10_000)
+    # with open("../param_space/param_regular_invade.txt", "w") as f:
+    #     for graph_path in graph_path_list:
+    #         f.write(f"{num_objects} {num_sounds} {graph_path} {num_trials}\n")
+
+    # ----- param_regular_4_invade ----- #
     num_objects = 5
     num_sounds = 5
-    graph_folder_name = "PA_100"
+    graph_folder_name = "regular_100_4_triangle"
     graph_path_list = [f"networks/{graph_folder_name}/" + a for a in os.listdir(f"/home/zihangw/EvoComm/networks/{graph_folder_name}")]
+    graph_path_list = sorted(graph_path_list, key=lambda s: tuple(map(int, re.findall(r"\d+", s))))
 
-    graph_folder_name = "social_network"
-    graph_path_list += [f"networks/{graph_folder_name}/" + a for a in os.listdir(f"/home/zihangw/EvoComm/networks/{graph_folder_name}")]
-    
+    graph_path_list = graph_path_list[::5]
+
     num_trials = int(10_000)
-    with open("../param_space/param_PA_invade.txt", "w") as f:
-            for graph_path in graph_path_list:
-                f.write(f"{num_objects} {num_sounds} {graph_path} {num_trials}\n")
+    with open("../param_space/param_regular_4_invade.txt", "w") as f:
+        for graph_path in graph_path_list:
+            f.write(f"{num_objects} {num_sounds} {graph_path} {num_trials}\n")
 
 # num_objects=$(sed -n "${line}p" ${param_file} | awk '{print $1}')
 # num_sounds=$(sed -n "${line}p" ${param_file} | awk '{print $2}')
