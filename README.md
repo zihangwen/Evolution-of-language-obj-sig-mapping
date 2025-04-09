@@ -1,2 +1,2 @@
 # Evolution of language
-object signal mapping project 
+Studying the emergence and evolution of languages in a structured population.
