@@ -59,18 +59,21 @@ if __name__ == "__main__":
     # [array([0. , 0. , 0.5, 0. , 0.5]), array([0., 0., 0., 1., 0.]), array([1., 0., 0., 0., 0.]), array([0., 1., 0., 0., 0.]), array([0.2, 0.2, 0.2, 0.2, 0.2])]
 
     fixation_time = 0
+    co_existence_count = 0
     fixation_count = 0
     for i_trial in range(num_trials):
         time_start = time.time()
         sim = SimulationGraphInvade(config, graph_path)
         sim.initialize(LanguageModelStabilized, lang_init, lang_invade)
-        unique_groups, i_t = sim.run()
+        result, i_t = sim.run(int(1e7))
         time_end = time.time()
         print("graph: %s, trial: %d, time cost: %.2f" % (graph_name, i_trial, time_end - time_start))
 
-        if unique_groups.item() == 1:
+        if result == "fix":
             fixation_time = fixation_time * (fixation_count / (fixation_count + 1)) + i_t / (fixation_count + 1)
             fixation_count += 1
+        elif result == "coexist":
+            co_existence_count += 1
 
     out_path = os.path.join(out_path_base, graph_base, graph_name)
     os.makedirs(out_path, exist_ok=True)
@@ -78,12 +81,14 @@ if __name__ == "__main__":
         f.write("# graph_name\t")
         f.write("num_trials\t")
         f.write("fixation_count\t")
-        f.write("fixation_time\n")
+        f.write("fixation_time\t")
+        f.write("co_existence_count\n")
 
         f.write(f"{graph_name}\t")
         f.write(f"{num_trials}\t")
         f.write(f"{fixation_count}\t")
-        f.write(f"{fixation_time}\n")
+        f.write(f"{fixation_time}\t")
+        f.write(f"{co_existence_count}\n")
         # np.savetxt(os.path.join(out_path, f"{n_trial*num_trials+i_trial}.txt"), logger, fmt='%g')
 
     print("hello world!")

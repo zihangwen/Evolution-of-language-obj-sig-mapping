@@ -21,6 +21,7 @@ class Simulation():
             language.initialize_language()
         # language_id1 -> language_id2 : payoff_matrix[language_id1, language_id2]    
         self.payoff_matrix = np.zeros((self.n_languages, self.n_languages))
+        self.self_payoff_vector = np.zeros(self.n_languages)
         self.update_payoff_all()
         self.assign_fitness()
         self.update_logger(-1)
@@ -60,11 +61,13 @@ class Simulation():
     def update_payoff_all(self) -> None:
         payoff_matrix = np.zeros((self.n_languages, self.n_languages))
         for language_id1 in range(self.n_languages):
+            language1 = self.get_language(language_id1)
             for language_id2 in range(self.n_languages):
-                language1 = self.get_language(language_id1)
                 language2 = self.get_language(language_id2)
                 payoff_matrix[language_id1, language_id2] = directional_comm(language1, language2)
         
+        self.self_payoff_vector = payoff_matrix.diagonal().copy()
+
         # no self communication
         if not self.self_communication:
             np.fill_diagonal(payoff_matrix, 0)
@@ -78,6 +81,8 @@ class Simulation():
             self.payoff_matrix[language_id, language_id2] = directional_comm(language, language2)
             self.payoff_matrix[language_id2, language_id] = directional_comm(language2, language)
         
+        self.self_payoff_vector[language_id] = self.payoff_matrix[language_id, language_id].copy()
+
         # no self communication
         if not self.self_communication:
             self.payoff_matrix[language_id, language_id] = 0
@@ -135,16 +140,20 @@ class SimulationGraph(Simulation):
 
     def update_payoff_all(self) -> None:
         payoff_matrix = np.zeros((self.n_languages, self.n_languages))
+        self_payoff_vector = np.zeros(self.n_languages)
         for language_id1 in range(self.n_languages):
+            language1 = self.get_language(language_id1)
+            self_payoff_vector[language_id1] = directional_comm(language1, language1)
             for language_id2 in self.graph[language_id1]:
-                language1 = self.get_language(language_id1)
                 language2 = self.get_language(language_id2)
                 payoff_matrix[language_id1, language_id2] = directional_comm(language1, language2)
         
+        self.self_payoff_vector = self_payoff_vector
         self.payoff_matrix = payoff_matrix
         
     def update_payoff_one(self, language_id : int) -> None:
         language = self.get_language(language_id)
+        self.self_payoff_vector[language_id] = directional_comm(language, language)
         for language_id2 in self.graph[language_id]:
             language2 = self.get_language(language_id2)
             self.payoff_matrix[language_id, language_id2] = directional_comm(language, language2)
@@ -187,7 +196,7 @@ class SimulationGraphInvade(SimulationGraph):
         self.payoff_matrix = np.zeros((self.n_languages, self.n_languages))
         self.update_payoff_all()
         self.assign_fitness()
-        self.update_logger(-1)
+        # self.update_logger(-1)
     
     def update_language(self, birth_id : int, death_id : int) -> None:
         language_birth = self.get_language(birth_id)
@@ -200,19 +209,28 @@ class SimulationGraphInvade(SimulationGraph):
         # self.update_payoff_all()
         self.assign_fitness()
     
-    def run(self) -> None:
+    def run(self, iteration = None) -> None:
         i_t = 0
-        while self.unique_groups.size > 1:
-            # print(i_t)
+        iteration = iteration if iteration is not None else np.inf
+        while self.unique_groups.size > 1 and i_t < iteration:
+            i_t += 1
             # b-d process
             birth_id, death_id = self.birth_death()
+            if self.get_language(birth_id).group_id == self.get_language(death_id).group_id:
+                continue
             # update language
             self.update_language(birth_id, death_id)
             # update payoff
-            self.update_logger(i_t)
-            i_t += 1
+            # self.update_logger(i_t)
         
-        return self.unique_groups, i_t
+        if self.unique_groups.size > 1:
+            result = "coexist"
+        elif self.unique_groups.item() == 1:
+            result = "fix"
+        else:
+            result = "lost"
+
+        return result, i_t
     
     @property
     def unique_groups(self) -> int:
