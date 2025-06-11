@@ -8,17 +8,20 @@ import networkx as nx
 import matplotlib.pyplot as plt
 import re
 import pickle
+from pathlib import Path
 
+BASE_PATH = Path("/home/zihangw/EvoComm")
 
-base_path = "/home/zihangw/EvoComm"
 # %%
-param_file = "param_space/param_regular_4_invade.txt"
-out_path_base = "results_invade"
+param_file = BASE_PATH / "param_space" / "invade_param_demes_multi.txt"
+out_path_base = BASE_PATH / "results_invade"
+combined_name = BASE_PATH / "results_invade_combined" / "invade_param_demes_multi_2.csv"
+
 n_trial = 100
 
 figure_path_base = f"/home/zihangw/EvoComm/figures_invading/"
 
-with open(os.path.join(base_path, param_file), "r") as f:
+with open(param_file, "r") as f:
     param_lines = [line.strip() for line in f.readlines()]
 
 # %%
@@ -33,10 +36,10 @@ for line in param_lines:
 
     graph_base = os.path.dirname(graph_path)
     graph_name = os.path.basename(graph_path).split(".")[0]
-    out_path = os.path.join(base_path, out_path_base, graph_base, graph_name)
+    out_path = out_path_base / graph_base / graph_name
 
     # graph property
-    G = nx.read_edgelist(os.path.join(base_path, graph_path), nodetype=int)
+    G = nx.read_edgelist(BASE_PATH / graph_path, nodetype=int)
     mean_degree = sum(dict(G.degree()).values()) / G.number_of_nodes()
 
     # Compute the Laplacian matrix
@@ -55,6 +58,7 @@ for line in param_lines:
     total_count = 0
     weighted_sum_time = 0  # To compute weighted average
     num_trials_done = 0
+    total_co_existence_count = 0
     for i_trial in range(n_trial):
         try:
             with open(os.path.join(out_path, f"{i_trial}.txt"), "r") as fr:
@@ -68,29 +72,34 @@ for line in param_lines:
             print(f"Error in {out_path}/{i_trial}.txt")
             continue
 
-        _, _, count, avg_time = result_lines[1].split("\t")
+        _, _, count, avg_time, co_existence_count = result_lines[1].split("\t")
         count = int(count)
         avg_time = float(avg_time)
+        co_existence_count = int(co_existence_count)
         num_trials_done += num_trials
 
         total_count += count
         weighted_sum_time += count * avg_time
+        total_co_existence_count += co_existence_count
     
     overall_avg_time = weighted_sum_time / total_count if total_count > 0 else 0
     pfix = total_count / num_trials_done if total_count > 0 else 0
 
-    data.append([num_objects, num_sounds, graph_base.split("/")[-1], graph_name, mean_degree, lambda_2, transitivity, num_trials_done, total_count, pfix, overall_avg_time])
+    data.append([num_objects, num_sounds, graph_base.split("/")[-1], graph_name, mean_degree, lambda_2, transitivity, num_trials_done, total_count, pfix, overall_avg_time, total_co_existence_count])
 
-df = pd.DataFrame(data, columns=["num_objects", "num_sounds", "graph_type", "graph_name", "graph_mean_degree", "Algebraic connectivity", "transitivity", "num_trials_done", "total_count", "pfix", "time to fix"])
+df = pd.DataFrame(data, columns=["num_objects", "num_sounds", "graph_type", "graph_name", "graph_mean_degree", "Algebraic connectivity", "transitivity", "num_trials_done", "fix_count", "pfix", "time_to_fix", "co_existence_count"])
+
+combined_name.parent.mkdir(parents=True, exist_ok=True)  # Ensure the directory exists
+df_all.to_csv(combined_name, index=False, sep="\t")
 
 # df = df.sort_values(by="graph_name", ascending=True)  # Sort by 'Total_Count'
 # df = df.reset_index(drop=True)  # Reset index
 
 # %%
-# with open(os.path.join(base_path, out_path_base, "PA_invade.pkl"), "wb") as f:
+# with open(os.path.join(out_path_base, "PA_invade.pkl"), "wb") as f:
 #     pickle.dump(df, f)
 
-# with open(os.path.join(base_path, out_path_base, "PA_invade.pkl"), "rb") as f:
+# with open(os.path.join(out_path_base, "PA_invade.pkl"), "rb") as f:
 #     df = pickle.load(f)
 
 # %% df bottleneck
@@ -107,7 +116,7 @@ df = pd.DataFrame(data, columns=["num_objects", "num_sounds", "graph_type", "gra
 # sns.set_theme(style="whitegrid")
 # df_filtered = df_bottleneck[df_bottleneck["beta"] == 0]
 # x_options = ['n_demes', 'Algebraic connectivity']
-# y_options = ['pfix', 'time to fix']
+# y_options = ['pfix', 'time_to_fix']
 # figure_name = "bottleneck_demes"
 # # figure_path = os.path.join(figure_path_base, figure_name)
 # os.makedirs(figure_path_base, exist_ok=True)
@@ -176,7 +185,7 @@ figure_name = "regular_100_4_triangle"
 
 df_reg_4 = df[df["graph_type"] == figure_name].copy()
 x_options = ['transitivity', 'Algebraic connectivity']
-y_options = ['pfix', 'time to fix']
+y_options = ['pfix', 'time_to_fix']
 
 # figure_path = os.path.join(figure_path_base, figure_name)
 os.makedirs(figure_path_base, exist_ok=True)
