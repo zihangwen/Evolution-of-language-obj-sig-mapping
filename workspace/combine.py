@@ -13,7 +13,7 @@ BASE_PATH = Path("/home/zihangw/EvoComm")
 # %%
 param_file = BASE_PATH / "param_space" / "invade_param_demes_multi.txt"
 out_path_base = BASE_PATH / "results_invade"
-combined_name = BASE_PATH / "results_combined" / "invade_param_demes_multi.csv"
+combined_name = BASE_PATH / "results_invade_combined" / "invade_param_demes_multi.csv"
 
 with open(param_file, "r") as f:
     param_sim = f.readlines()
