@@ -4,6 +4,8 @@ import copy
 import time
 import os
 import sys
+from pathlib import Path
+
 from utilities import *
 from model import Config, LanguageModelStabilized
 from simulations import SimulationGraphInvade
@@ -19,13 +21,17 @@ if __name__ == "__main__":
 
     # num_objects = 5
     # num_sounds = 5
-    # graph_path = "networks_archieve/toy/star_10.txt"
-    # num_trials = 10000
+    # graph_path = "networks/toy/star_10.txt"
+    # num_trials = 10
     # out_path_base = "results_test"
     # n_trial = 0
 
     graph_base = os.path.dirname(graph_path)
     graph_name = os.path.basename(graph_path).split(".")[0]
+
+    out_path = os.path.join(out_path_base, graph_base, graph_name)
+    os.makedirs(out_path, exist_ok=True)
+
     config = Config(num_objects, num_sounds)
 
     lang_init = LanguageModelStabilized(0, num_objects, num_sounds)
@@ -74,9 +80,8 @@ if __name__ == "__main__":
             fixation_count += 1
         elif result == "coexist":
             co_existence_count += 1
+            sim.logger.save_logs(Path(out_path), f"{n_trial}_{i_trial}_logger.pkl")
 
-    out_path = os.path.join(out_path_base, graph_base, graph_name)
-    os.makedirs(out_path, exist_ok=True)
     with open(os.path.join(out_path, f"{n_trial}.txt"), "w") as f:
         f.write("# graph_name\t")
         f.write("num_trials\t")
