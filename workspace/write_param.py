@@ -146,10 +146,11 @@ BASE_PATH = Path("/home/zihangw/EvoComm/")
 # ----- deme model invasion ----- #
 num_objects = 5
 num_sounds = 5
-graph_folder_list = [f"bottleneck_demes_{num_demes}" for num_demes in [5, 10, 20, 50, 100]]
+# graph_folder_list = [f"bottleneck_demes_{num_demes}" for num_demes in [5, 10, 20, 50, 100]]
+graph_folder_list = [f"bottleneck_demes_{num_demes}" for num_demes in [20, 50]]
 
 num_trials = int(10_000)
-with open(BASE_PATH / "param_space" / "invade_param_demes_multi.txt", "w") as f:
+with open(BASE_PATH / "param_space" / "invade_param_demes_multi_logger.txt", "w") as f:
     for graph_folder_name in graph_folder_list:
         graph_path_list = [
             f"networks/{graph_folder_name}/" + a for a in os.listdir(BASE_PATH / "networks" / graph_folder_name)
