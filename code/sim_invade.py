@@ -80,7 +80,8 @@ if __name__ == "__main__":
             fixation_count += 1
         elif result == "coexist":
             co_existence_count += 1
-            sim.logger.save_logs(Path(out_path), f"{n_trial}_{i_trial}_logger.pkl")
+            sim.logger.save_logs(Path(out_path) / f"{n_trial}_{i_trial}_logger.pkl")
+            break
 
     with open(os.path.join(out_path, f"{n_trial}.txt"), "w") as f:
         f.write("# graph_name\t")
