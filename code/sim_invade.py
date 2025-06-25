@@ -7,8 +7,8 @@ import sys
 from pathlib import Path
 
 from utilities import *
-from model import Config, LanguageModelStabilized
-from simulations import SimulationGraphInvade
+from model import Config, LanguageModelStabilized, directional_comm
+from simulations import SimulationGraphInvadeFast
 
 
 if __name__ == "__main__":
@@ -25,6 +25,9 @@ if __name__ == "__main__":
     # num_trials = 10
     # out_path_base = "results_test"
     # n_trial = 0
+
+    # max_iterations = int(1e7)
+    max_iterations = None
 
     graph_base = os.path.dirname(graph_path)
     graph_name = os.path.basename(graph_path).split(".")[0]
@@ -63,15 +66,21 @@ if __name__ == "__main__":
     #                           [0.2, 0.2, 0.2, 0.2]])
     # array([0., 0., 1., 0., 0.]), array([0., 0., 0., 1., 0.]), array([1., 0., 0., 0., 0.]), array([0., 1., 0., 0., 0.]), array([1., 0., 0., 0., 0.])
     # [array([0. , 0. , 0.5, 0. , 0.5]), array([0., 0., 0., 1., 0.]), array([1., 0., 0., 0., 0.]), array([0., 1., 0., 0., 0.]), array([0.2, 0.2, 0.2, 0.2, 0.2])]
+    payoff_values = np.array([
+        directional_comm(lang_init, lang_init),
+        directional_comm(lang_init, lang_invade),
+        directional_comm(lang_invade, lang_init),
+        directional_comm(lang_invade, lang_invade)
+    ])
 
     fixation_time = 0
     co_existence_count = 0
     fixation_count = 0
     for i_trial in range(num_trials):
         time_start = time.time()
-        sim = SimulationGraphInvade(config, graph_path)
-        sim.initialize(LanguageModelStabilized, lang_init, lang_invade)
-        result, i_t = sim.run(int(1e7))
+        sim = SimulationGraphInvadeFast(config, graph_path)
+        sim.initialize(payoff_values)
+        result, i_t = sim.run(max_iterations)
         time_end = time.time()
         print("graph: %s, trial: %d, time cost: %.2f" % (graph_name, i_trial, time_end - time_start))
 
@@ -80,8 +89,8 @@ if __name__ == "__main__":
             fixation_count += 1
         elif result == "coexist":
             co_existence_count += 1
-            sim.logger.save_logs(Path(out_path) / f"{n_trial}_{i_trial}_logger.pkl")
-            break
+            # sim.logger.save_logs(Path(out_path) / f"{n_trial}_{i_trial}_logger.pkl")
+            # break
 
     with open(os.path.join(out_path, f"{n_trial}.txt"), "w") as f:
         f.write("# graph_name\t")

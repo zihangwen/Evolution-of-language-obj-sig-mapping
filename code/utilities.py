@@ -5,21 +5,28 @@ import numpy as np
 EPS = 1e-6
 
 def load_G(f):
-        G = dict()
-        el = np.loadtxt(f).astype(int)
-        for edge in el:
-            n1, n2 = edge
-            if n1 in G:
-                G[n1] += [n2]
-            else:
-                G[n1] = [n2]
+    G = dict()
+    el = np.loadtxt(f).astype(int)
+    for edge in el:
+        n1, n2 = edge
+        if n1 in G:
+            G[n1] += [n2]
+        else:
+            G[n1] = [n2]
 
-            if n2 in G:
-                G[n2] += [n1]
-            else:
-                G[n2] = [n1]
-        return G
-    
+        if n2 in G:
+            G[n2] += [n1]
+        else:
+            G[n2] = [n1]
+    return G
+
+def process_G(G):    
+    G_mask = np.zeros((len(G), len(G)), dtype=int)
+    n_neighbors = np.zeros(len(G), dtype=int)
+    for n1, n2 in G.items():
+        G_mask[n1, n2] = 1
+        n_neighbors[n1] = len(n2)
+    return G_mask, n_neighbors
 
 def Softmax(x : np.array, temperature : float = 1.0, dim : int = -1) -> np.array:
     x = x / temperature

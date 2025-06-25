@@ -209,7 +209,7 @@ class SimulationGraph(Simulation):
 
 
 class SimulationGraphInvade(SimulationGraph):
-    def __init__(self, config : Config, graph_file : str, language_model : Type[LanguageModel] = LanguageModel) -> None:
+    def __init__(self, config : Config, graph_file : str) -> None:
         super().__init__(config, graph_file)
         self.groups = list(range(self.n_languages))
         self.logger.add_keys("num_group_0", "num_group_1")
@@ -293,6 +293,88 @@ class SimulationGraphInvade(SimulationGraph):
             self.logger.add("num_group_0", np.sum(np.array(self.groups) == 0))
             self.logger.add("num_group_1", np.sum(np.array(self.groups) == 1))
 
+
+class SimulationGraphInvadeFast():
+    def __init__(self, config : Config, graph_file : str) -> None:
+        self.config = config
+        self.obj, self.sound = config.obj, config.sound
+        # self.self_communication = config.self_communication
+        self.logger = Logger("iteration", "max_fitness", "mean_fitness", "num_group_0", "num_group_1")
+
+        self.graph = load_G(graph_file)
+        self.graph_mask, self.n_neighbors = process_G(self.graph)
+        self.n_languages = config.n_languages = len(self.graph_mask)
+        self.groups = np.zeros(self.n_languages, dtype=int)
+
+    def initialize(
+            self,
+            payoff_values : Optional[np.array] = None, # [0: initinit, 1: initinvade, 2: invadeinit, 3: invadeinvade]
+    ) -> None:
+        self.payoff_values = payoff_values
+
+        invade_pos = np.random.randint(self.n_languages)
+        self.groups[invade_pos] = 1  # invade group
+        self.payoff_matrix = self.payoff_values[2 * np.expand_dims(self.groups, 1) + np.expand_dims(self.groups, 0)] * self.graph_mask
+
+        self.assign_fitness()
+        # self.update_logger(-1)
+        
+    def update_language(self, birth_id : int, death_id : int) -> None:
+        self.groups[death_id] =  self.groups[birth_id]
+        # update payoff
+        self.payoff_matrix[death_id, :] = self.payoff_values[2 * self.groups[death_id] + self.groups] * self.graph_mask[death_id, :]
+        self.payoff_matrix[:, death_id] = self.payoff_values[2 * self.groups + self.groups[death_id]] * self.graph_mask[:, death_id]
+        self.assign_fitness()
+    
+    def birth_death(self) -> None:
+        fitness_vector = self.fitness_vector
+        fitness_vector = fitness_vector / fitness_vector.sum()
+        birth_id = np.random.multinomial(1, fitness_vector).argmax()
+        death_id = np.random.choice(self.graph[birth_id])
+        return birth_id, death_id
+
+    def run(self, iteration = None) -> None:
+        i_t = 0
+        iteration = iteration if iteration is not None else np.inf
+        while self.unique_groups.size > 1 and i_t < iteration:
+            i_t += 1
+            # b-d process
+            birth_id, death_id = self.birth_death()
+            if self.groups[death_id] == self.groups[birth_id]:
+                continue
+
+            self.update_language(birth_id, death_id)
+            # update payoff
+            # self.update_logger(i_t)
+        
+        if self.unique_groups.size > 1:
+            result = "coexist"
+        elif self.unique_groups.item() == 1:
+            result = "fix"
+        else:
+            result = "lost"
+
+        return result, i_t
+    
+    def assign_fitness(self) -> None:
+        sum_payoff = 0.5 * (np.einsum('ij->i', self.payoff_matrix) + np.einsum('ij->j', self.payoff_matrix))
+        self.fitness_vector = sum_payoff / self.n_neighbors
+
+    @property
+    def unique_groups(self) -> int:
+        return np.unique(self.groups)
+    
+    # def update_logger(self, i_t : int = -1) -> None:
+    #     if (i_t % 100) == (100 - 1):
+    #         # num_languages = self.get_num_languages()
+    #         fitness_vector = self.get_fitness()
+    #         self.logger.add("iteration", i_t)
+    #         self.logger.add("max_fitness", fitness_vector.max())
+    #         self.logger.add("mean_fitness", fitness_vector.mean())
+    #         # self.logger.add("max_self_payoff", self.self_payoff_vector.max())
+    #         # self.logger.add("mean_self_payoff", self.self_payoff_vector.mean())
+    #         self.logger.add("num_group_0", np.sum(np.array(self.groups) == 0))
+    #         self.logger.add("num_group_1", np.sum(np.array(self.groups) == 1))
 
 # class Simulation:
 #     def __init__(self, config : Config, graph_file : str) -> None:
