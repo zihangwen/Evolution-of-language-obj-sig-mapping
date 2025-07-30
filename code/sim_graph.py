@@ -1,4 +1,5 @@
 import numpy as np
+import pickle
 from dataclasses import dataclass
 import copy
 import time
@@ -21,14 +22,22 @@ if __name__ == "__main__":
     n_trial = int(sys.argv[9])
     # num_objects = 5
     # num_sounds = 5
-    # num_languages = 10
     # model_name = "softmax"
-    # graph_path = "networks/toy/star_10.txt"
-    # num_runs = 10000
+    # graph_path = "networks/bottleneck_demes_5/bn_5_1_m-3_0.txt"
+    # num_runs = 100
     # out_path_base = "results_test"
+    # sample_times = 5
+    # temperature = 1.0
     # n_trial = 0
 
     num_trials = 10
+
+    graph_base = os.path.dirname(graph_path)
+    graph_name = os.path.basename(graph_path).split(".")[0]
+
+    out_path = os.path.join(out_path_base, model_name, graph_base, graph_name)
+    os.makedirs(out_path, exist_ok=True)
+    
     config = Config(num_objects, num_sounds,
                     sample_times = sample_times, temperature = temperature)
     if model_name == "norm":
@@ -39,17 +48,16 @@ if __name__ == "__main__":
     for i_trial in range(num_trials):
         time_start = time.time()
         
-        graph_name = os.path.basename(graph_path).split(".")[0]
-
         sim = SimulationGraph(config, graph_path)
         sim.initialize(LangModel)
         sim.run(num_runs)
         time_end = time.time()
         print("graph: %s, trial: %d, time cost: %.2f" % (graph_name, i_trial, time_end - time_start))
 
-        logger = np.array(sim.get_logger())
-        out_path = os.path.join(out_path_base, model_name, graph_name)
-        os.makedirs(out_path, exist_ok=True)
-        np.savetxt(os.path.join(out_path, f"st_{sample_times}_temp_{temperature:.1f}_{n_trial*num_trials+i_trial}.txt"), logger, fmt='%g')
-
+        # logger = np.array(sim.get_logger())
+        # np.savetxt(os.path.join(out_path, f"st_{sample_times}_temp_{temperature:.1f}_{n_trial*num_trials+i_trial}.txt"), logger, fmt='%g')
+        file_path = os.path.join(out_path, f"st_{sample_times}_temp_{temperature:.1f}_{n_trial*num_trials+i_trial}.pkl")
+        with open(file_path, "wb") as f:
+            pickle.dump(sim.logger.get_logs(), f)
+            
     print("hello world!")

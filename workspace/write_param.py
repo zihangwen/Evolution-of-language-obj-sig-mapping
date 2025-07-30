@@ -162,29 +162,62 @@ BASE_PATH = Path("/home/zihangw/EvoComm/")
 
 # %%
 # ----- deme model invasion (deme size and deme number) ----- #
+# deme_size_list = [5, 10, 20]
+# # num_demes_list = [5, 10, 20, 50]
+# num_demes_list = [1]
+
+# num_objects = 5
+# num_sounds = 5
+# graph_folder_list = [
+#     f"bottleneck_demes{num_demes}_size{deme_size}" for num_demes in num_demes_list for deme_size in deme_size_list
+# ]
+
+# num_trials = int(10_000)
+# with open(BASE_PATH / "param_space" / "invade_param_demes_multi_ns_1.txt", "w") as f:
+#     for graph_folder_name in graph_folder_list:
+#         graph_path_list = [
+#             f"networks/{graph_folder_name}/" + a for a in os.listdir(BASE_PATH / "networks" / graph_folder_name)
+#         ]
+#         graph_path_list = sorted(graph_path_list, key=lambda s: tuple(map(int, re.findall(r"\d+", s))))
+                
+#         for graph_path in graph_path_list:
+#             f.write(f"{num_objects} {num_sounds} {graph_path} {num_trials}\n")
+
+# %%
+# ----- deme model evolve (deme size and deme number) ----- #
 deme_size_list = [5, 10, 20]
-# num_demes_list = [5, 10, 20, 50]
-num_demes_list = [1]
+num_demes_list = [1, 5, 10, 20, 50]
 
 num_objects = 5
 num_sounds = 5
+
+model_name_list = ["norm"]
+sample_times_list = [10]
+temperature_list = [1.0]
+
+num_runs = int(50_000)
+
 graph_folder_list = [
     f"bottleneck_demes{num_demes}_size{deme_size}" for num_demes in num_demes_list for deme_size in deme_size_list
 ]
 
 num_trials = int(10_000)
-with open(BASE_PATH / "param_space" / "invade_param_demes_multi_ns_1.txt", "w") as f:
+with open(BASE_PATH / "param_space" / "evolve_param_demes_multi_ns.txt", "w") as f:
     for graph_folder_name in graph_folder_list:
+        out_path_base = f"results/{graph_folder_name}"
         graph_path_list = [
             f"networks/{graph_folder_name}/" + a for a in os.listdir(BASE_PATH / "networks" / graph_folder_name)
         ]
         graph_path_list = sorted(graph_path_list, key=lambda s: tuple(map(int, re.findall(r"\d+", s))))
-                
         for graph_path in graph_path_list:
-            f.write(f"{num_objects} {num_sounds} {graph_path} {num_trials}\n")
+            for model_name in model_name_list:
+                for sample_times in sample_times_list:
+                    for temperature in temperature_list:
+                        f.write(f"{num_objects} {num_sounds} {model_name} {graph_path} {num_runs} {sample_times} {temperature}\n")
 
 # %%
 # num_objects=$(sed -n "${line}p" ${param_file} | awk '{print $1}')
 # num_sounds=$(sed -n "${line}p" ${param_file} | awk '{print $2}')
 # graph_path=$(sed -n "${line}p" ${param_file} | awk '{print $4}')
 # num_trials=$(sed -n "${line}p" ${param_file} | awk '{print $5}')
+# %%
