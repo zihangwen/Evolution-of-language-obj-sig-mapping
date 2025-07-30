@@ -144,13 +144,36 @@ BASE_PATH = Path("/home/zihangw/EvoComm/")
 
 # %%
 # ----- deme model invasion ----- #
+# num_objects = 5
+# num_sounds = 5
+# # graph_folder_list = [f"bottleneck_demes_{num_demes}" for num_demes in [5, 10, 20, 50, 100]]
+# graph_folder_list = [f"bottleneck_demes_{num_demes}" for num_demes in [20, 50]]
+
+# num_trials = int(10_000)
+# with open(BASE_PATH / "param_space" / "invade_param_demes_multi_logger.txt", "w") as f:
+#     for graph_folder_name in graph_folder_list:
+#         graph_path_list = [
+#             f"networks/{graph_folder_name}/" + a for a in os.listdir(BASE_PATH / "networks" / graph_folder_name)
+#         ]
+#         graph_path_list = sorted(graph_path_list, key=lambda s: tuple(map(int, re.findall(r"\d+", s))))
+                
+#         for graph_path in graph_path_list:
+#             f.write(f"{num_objects} {num_sounds} {graph_path} {num_trials}\n")
+
+# %%
+# ----- deme model invasion (deme size and deme number) ----- #
+deme_size_list = [5, 10, 20]
+# num_demes_list = [5, 10, 20, 50]
+num_demes_list = [1]
+
 num_objects = 5
 num_sounds = 5
-# graph_folder_list = [f"bottleneck_demes_{num_demes}" for num_demes in [5, 10, 20, 50, 100]]
-graph_folder_list = [f"bottleneck_demes_{num_demes}" for num_demes in [20, 50]]
+graph_folder_list = [
+    f"bottleneck_demes{num_demes}_size{deme_size}" for num_demes in num_demes_list for deme_size in deme_size_list
+]
 
 num_trials = int(10_000)
-with open(BASE_PATH / "param_space" / "invade_param_demes_multi_logger.txt", "w") as f:
+with open(BASE_PATH / "param_space" / "invade_param_demes_multi_ns_1.txt", "w") as f:
     for graph_folder_name in graph_folder_list:
         graph_path_list = [
             f"networks/{graph_folder_name}/" + a for a in os.listdir(BASE_PATH / "networks" / graph_folder_name)
