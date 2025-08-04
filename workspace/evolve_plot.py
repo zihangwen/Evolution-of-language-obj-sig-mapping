@@ -48,6 +48,7 @@ for param in param_sim:
 
     final_lang = []
     final_lang_time = []
+    counter = 0
     for i in range(100):
         graph_base = os.path.dirname(graph_path)
         graph_name = os.path.basename(graph_path).split(".")[0]
@@ -58,6 +59,7 @@ for param in param_sim:
         try:
             with open(file_path, "rb") as f:
                 logger = pickle.load(f)
+            counter += 1
         except FileNotFoundError:
             continue
 
@@ -66,6 +68,7 @@ for param in param_sim:
         final_lang_time = logger["iteration"][np.where(np.array(logger["num_languages"]) == logger["num_languages"][-1])[0][0]]
     
     data_all["graph_name"].append(graph_base_name)
+    data_all["num_trials"].append(counter)
     data_all["num_demes"].append(num_demes)
     data_all["deme_size"].append(deme_size)
     data_all["num_edge_added"].append(num_edge_added)
@@ -75,6 +78,32 @@ for param in param_sim:
     data_all["final_num_lang"].append(np.mean(final_lang).item())
     data_all["final_num_lang_time"].append(np.mean(final_lang_time).item())
 
-
 # %%
 df = pd.DataFrame(data_all)
+deme_size_list = df['deme_size'].unique()
+
+# %%
+fig, axes = plt.subplots(1, len(deme_size_list), figsize=(12 * len(deme_size_list), 8), sharex='col')
+
+# plt.figure(figsize=(12, 8))
+for i, deme_size in enumerate(deme_size_list):
+    ax = axes[i]
+    df_select = df[df['deme_size'] == deme_size]
+    sns.lineplot(data=df_select, x="num_edge_added", y="final_num_lang", hue="num_demes", markers=True, dashes=False, ax=ax)
+    ax.set_title(f"Deme Size: {deme_size}")
+    ax.set_xlabel("Number of Edges Added")
+    ax.set_ylabel("Final Number of Languages")
+
+# %%
+fig, axes = plt.subplots(1, len(deme_size_list), figsize=(12 * len(deme_size_list), 8), sharex='col')
+
+# plt.figure(figsize=(12, 8))
+for i, deme_size in enumerate(deme_size_list):
+    ax = axes[i]
+    df_select = df[df['deme_size'] == deme_size]
+    sns.lineplot(data=df_select, x="num_edge_added", y="final_num_lang_time", hue="num_demes", markers=True, dashes=False, ax=ax)
+    ax.set_title(f"Deme Size: {deme_size}")
+    ax.set_xlabel("Number of Edges Added")
+    ax.set_ylabel("Time to Reach Final Number of Languages")
+
+# %%
