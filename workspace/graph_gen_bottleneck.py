@@ -72,7 +72,8 @@ num_demes_list = [1]
 # num_demes = 10
 # num_edges_list = [1, 2, 5, 10, 20, 50]
 # beta_list = [-3, -2, -1, 0, 1, 2]
-num_edges_list = [5, 10, 20, 40]
+# num_edges_list = [5, 10, 20, 40]
+num_edges_list = [0]
 beta_list = [0]
 
 for deme_size in deme_size_list:
