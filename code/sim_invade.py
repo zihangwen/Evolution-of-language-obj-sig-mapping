@@ -26,8 +26,8 @@ if __name__ == "__main__":
     # out_path_base = "results_test"
     # n_trial = 0
 
-    # max_iterations = int(1e7)
-    max_iterations = None
+    max_iterations = int(1e7)
+    # max_iterations = None
 
     graph_base = os.path.dirname(graph_path)
     graph_name = os.path.basename(graph_path).split(".")[0]

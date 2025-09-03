@@ -58,6 +58,7 @@ class Simulation():
         # language_id1 -> language_id2 : payoff_matrix[language_id1, language_id2]    
         self.payoff_matrix = np.zeros((self.n_languages, self.n_languages))
         self.self_payoff_vector = np.zeros(self.n_languages)
+        self.language_tags = np.arange(self.n_languages)
         self.update_payoff_all()
         self.assign_fitness()
         self.update_logger(-1)
@@ -134,6 +135,16 @@ class Simulation():
     def get_languages(self) -> List[LanguageModel]:
         return self.languages
     
+    def get_languages_tags(self) -> int:
+        language_tags = np.arange(self.n_languages)
+        for language_id in range(1, self.n_languages):
+            for language_id2 in range(language_id):
+                if similar_language_check(self.get_language(language_id), self.get_language(language_id2)):
+                    language_tags[language_id] = language_tags[language_id2]
+                    break
+        self.language_tags = align_cluster_labels(self.language_tags, language_tags)
+        return self.language_tags
+
     def get_num_languages(self) -> int:
         language_tags = np.arange(self.n_languages)
         for language_id in range(1, self.n_languages):
@@ -206,6 +217,30 @@ class SimulationGraph(Simulation):
         sum_payoff = 0.5 * (np.einsum('ij->i', self.payoff_matrix) + np.einsum('ij->j', self.payoff_matrix))
         for language_id in range(self.n_languages):
             self.get_language(language_id).fitness = sum_payoff[language_id] / self.n_neighbors[language_id]
+
+
+class SimulationGraphRecord(SimulationGraph):
+    def __init__(self, config : Config, graph_file : str) -> None:
+        super().__init__(config, graph_file)
+        self.logger.add_key("fitness_vector")
+        self.logger.add_key("payoff_vector")
+        self.logger.add_key("language_tags")
+
+    def update_logger(self, i_t : int = -1) -> None:
+        # num_languages = np.nan
+        if (i_t % 100) == (100 - 1):
+            language_tags = self.get_languages_tags()
+            num_languages = len(np.unique(language_tags))
+            fitness_vector = self.get_fitness()
+            self.logger.add("iteration", i_t)
+            self.logger.add("max_fitness", fitness_vector.max())
+            self.logger.add("mean_fitness", fitness_vector.mean())
+            self.logger.add("num_languages", num_languages)
+            self.logger.add("max_self_payoff", self.self_payoff_vector.max())
+            self.logger.add("mean_self_payoff", self.self_payoff_vector.mean())
+            self.logger.add("fitness_vector", fitness_vector.copy())
+            self.logger.add("payoff_vector", self.self_payoff_vector.copy())
+            self.logger.add("language_tags", self.language_tags.copy())
 
 
 class SimulationGraphInvade(SimulationGraph):
