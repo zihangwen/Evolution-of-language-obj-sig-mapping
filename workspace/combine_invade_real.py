@@ -115,15 +115,12 @@ for param in param_sim:
     # eigenvalues = np.linalg.eigvalsh(L)
     # lambda_2 = sorted(eigenvalues)[1]
 
-    # # transitivity
-    transitivity = nx.transitivity(G)
-
     # new_row["graph_mean_degree"] = mean_degree
     # new_row["lambda_2"] = lambda_2
-    new_row["transitivity"] = transitivity
 
     df_graph = pd.concat([df_graph, new_row], ignore_index=True)
 
+graph_info_path.parent.mkdir(parents=True, exist_ok=True)  # Ensure the directory exists
 df_graph.to_csv(graph_info_path, index=False, sep="\t")
 
 # %%
