@@ -76,10 +76,10 @@ for param in param_sim:
     graph_path = param[2]
     graph_base = os.path.dirname(graph_path)
     graph_name = os.path.basename(graph_path).split(".")[0]
-    out_path = out_path_base / graph_base / graph_name
-    if not out_path.exists():
-        print(f"Path {out_path} does not exist, skipping.")
-        continue
+    # out_path = out_path_base / graph_base / graph_name
+    # if not out_path.exists():
+    #     print(f"Path {out_path} does not exist, skipping.")
+    #     continue
 
     G = nx.read_edgelist(BASE_PATH / "real_data" / graph_path, nodetype=int)
 
