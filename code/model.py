@@ -17,6 +17,7 @@ class Config:
     sample_times : int = 100
     self_communication : bool = False # whether self communication is allowed
     temperature : Optional[float] = 1.0
+    _log_every : int = 100 # log every n runs
 
 
 class LanguageModel:

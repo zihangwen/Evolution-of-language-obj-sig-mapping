@@ -39,7 +39,8 @@ if __name__ == "__main__":
     os.makedirs(out_path, exist_ok=True)
     
     config = Config(num_objects, num_sounds,
-                    sample_times = sample_times, temperature = temperature)
+                    sample_times = sample_times, temperature = temperature,
+                    _log_every = 100)
     if model_name == "norm":
         LangModel = LanguageModelNorm
     elif model_name == "softmax":
