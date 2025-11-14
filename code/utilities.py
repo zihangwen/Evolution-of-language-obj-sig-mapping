@@ -1,6 +1,6 @@
 import numpy as np
-from scipy.optimize import linear_sum_assignment ##### added #####
-from sklearn.metrics import confusion_matrix ##### added #####
+# from scipy.optimize import linear_sum_assignment ##### added #####
+# from sklearn.metrics import confusion_matrix ##### added #####
 
 EPS = 1e-6
 
@@ -9,6 +9,9 @@ def load_G(f):
     el = np.loadtxt(f).astype(int)
     for edge in el:
         n1, n2 = edge
+        if n1 == n2:
+            continue
+        
         if n1 in G:
             G[n1] += [n2]
         else:
@@ -56,34 +59,38 @@ def rename_numbers(lst):
 
 
 def align_cluster_labels(y_true, y_pred):
-    """
-    Aligns the cluster labels of y_pred to match y_true as closely as possible.
+    pass
+
+
+# def align_cluster_labels(y_true, y_pred):
+#     """
+#     Aligns the cluster labels of y_pred to match y_true as closely as possible.
     
-    Parameters:
-        y_true (array-like): Reference clustering labels (length N)
-        y_pred (array-like): Clustering labels to be aligned (length N)
+#     Parameters:
+#         y_true (array-like): Reference clustering labels (length N)
+#         y_pred (array-like): Clustering labels to be aligned (length N)
         
-    Returns:
-        y_pred_aligned (numpy array): y_pred with relabeled clusters
-    """
-    unique_true = np.unique(y_true)
-    unique_pred = np.unique(y_pred)
+#     Returns:
+#         y_pred_aligned (numpy array): y_pred with relabeled clusters
+#     """
+#     unique_true = np.unique(y_true)
+#     unique_pred = np.unique(y_pred)
     
-    # Build confusion matrix
-    contingency_matrix = confusion_matrix(y_true, y_pred)
+#     # Build confusion matrix
+#     contingency_matrix = confusion_matrix(y_true, y_pred)
 
-    # Remove zero rows and columns
-    nonzero_rows = contingency_matrix.sum(axis=1) > 0
-    nonzero_cols = contingency_matrix.sum(axis=0) > 0
-    filtered_matrix = contingency_matrix[np.ix_(nonzero_rows, nonzero_cols)]
+#     # Remove zero rows and columns
+#     nonzero_rows = contingency_matrix.sum(axis=1) > 0
+#     nonzero_cols = contingency_matrix.sum(axis=0) > 0
+#     filtered_matrix = contingency_matrix[np.ix_(nonzero_rows, nonzero_cols)]
 
-    # Solve optimal assignment
-    row_ind, col_ind = linear_sum_assignment(-filtered_matrix)
+#     # Solve optimal assignment
+#     row_ind, col_ind = linear_sum_assignment(-filtered_matrix)
     
-    # Create mapping from old labels to new labels
-    mapping = {unique_pred[col]: unique_true[row] for row, col in zip(row_ind, col_ind)}
+#     # Create mapping from old labels to new labels
+#     mapping = {unique_pred[col]: unique_true[row] for row, col in zip(row_ind, col_ind)}
     
-    # Apply mapping
-    y_pred_aligned = np.array([mapping[label] if label in mapping else label for label in y_pred])
+#     # Apply mapping
+#     y_pred_aligned = np.array([mapping[label] if label in mapping else label for label in y_pred])
     
-    return y_pred_aligned
+#     return y_pred_aligned

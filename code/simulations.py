@@ -227,7 +227,7 @@ class SimulationGraph(Simulation):
 
         # self.n_neighbors = {k: len(v) for k, v in self.graph.items()}
         config.n_languages = len(self.graph)
-        self._neighbors = [np.array(self.graph[i], dtype=int) for i in range(self.n_languages)]
+        self._neighbors = [np.array(self.graph[i], dtype=int) for i in range(config.n_languages)]
 
         super().__init__(config)
             

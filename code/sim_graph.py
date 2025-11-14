@@ -30,7 +30,7 @@ if __name__ == "__main__":
     # temperature = 1.0
     # n_trial = 0
 
-    num_trials = 10
+    num_trials = 1
 
     graph_base = os.path.dirname(graph_path)
     graph_name = os.path.basename(graph_path).split(".")[0]
@@ -41,6 +41,7 @@ if __name__ == "__main__":
     config = Config(num_objects, num_sounds,
                     sample_times = sample_times, temperature = temperature,
                     _log_every = 100)
+    
     if model_name == "norm":
         LangModel = LanguageModelNorm
     elif model_name == "softmax":
