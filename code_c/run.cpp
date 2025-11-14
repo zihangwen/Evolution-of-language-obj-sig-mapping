@@ -81,15 +81,30 @@ int main(int argc, char **argv) {
         ofstream file;
         file.open(out_path, ios::app);
         file << "iteration\tmax_fitness\tmean_fitness\tnum_languages\tmax_self_payoff\tmean_self_payoff\n";
-        for (size_t i = 0; i < sim.logger.iteration.size(); ++i) {
-            file << sim.logger.iteration[i] << "\t"
-                 << sim.logger.max_fitness[i] << "\t"
-                 << sim.logger.mean_fitness[i] << "\t"
-                 << sim.logger.num_languages[i] << "\t"
-                 << sim.logger.max_self_payoff[i] << "\t"
-                 << sim.logger.mean_self_payoff[i] << "\n";
+        
+        // Write only the last segment where the number of languages changed
+        int last_num_lang = sim.logger.num_languages.back();
+        for (size_t i = sim.logger.iteration.size() - 1; i >= 0; --i) {
+            if (sim.logger.num_languages[i-1] != last_num_lang) {
+                file << sim.logger.iteration[i] << "\t"
+                     << sim.logger.max_fitness[i] << "\t"
+                     << sim.logger.mean_fitness[i] << "\t"
+                     << sim.logger.num_languages[i] << "\t"
+                     << sim.logger.max_self_payoff[i] << "\t"
+                     << sim.logger.mean_self_payoff[i] << "\n";
+                break;
+            }
         }
-        file.close();
+        
+        // for (size_t i = 0; i < sim.logger.iteration.size(); ++i) {
+        //     file << sim.logger.iteration[i] << "\t"
+        //          << sim.logger.max_fitness[i] << "\t"
+        //          << sim.logger.mean_fitness[i] << "\t"
+        //          << sim.logger.num_languages[i] << "\t"
+        //          << sim.logger.max_self_payoff[i] << "\t"
+        //          << sim.logger.mean_self_payoff[i] << "\n";
+        // }
+        // file.close();
     }
     
     return 0;
