@@ -41,7 +41,7 @@ int main(int argc, char **argv) {
     string model_name = "norm";
     float temperature = 0.0;
     int _log_every = 100;
-    int num_trials = 1000;
+    int num_trials = 100;
 
     Config cfg = {
         num_objects,
