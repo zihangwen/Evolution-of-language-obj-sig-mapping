@@ -41,7 +41,9 @@ print("Forest: avg shortest path length", graph_list["hg_forest"]["avg_shortest_
 print("Forest: diameter", graph_list["hg_forest"]["diameter"])
 print("Forest: modularity (Louvain)", graph_list["hg_forest"]["modularity"])
 
-# nx.write_edgelist(G_unweighted, BASE_PATH / "cleaned" / "hg_forest.txt", data=False)
+# remove self-loops
+G_unweighted.remove_edges_from(nx.selfloop_edges(G_unweighted))
+nx.write_edgelist(G_unweighted, BASE_PATH / "cleaned" / "hg_forest.txt", data=False)
 
 # %% ----- ----- ----- ----- ----- Hunter gather coastal ----- ----- ----- ----- ----- %% #
 # Read the file manually
@@ -75,6 +77,8 @@ print("Coastal: avg shortest path length", graph_list["hg_coastal"]["avg_shortes
 print("Coastal: diameter", graph_list["hg_coastal"]["diameter"])
 print("Coastal: modularity (Louvain)", graph_list["hg_coastal"]["modularity"])
 
+# remove self-loops
+G_unweighted.remove_edges_from(nx.selfloop_edges(G_unweighted))
 nx.write_edgelist(G_unweighted, BASE_PATH / "cleaned" / "hg_coastal.txt", data=False)
 
 # %% ----- ----- ----- ----- ----- Padgett-Florence-Families ----- ----- ----- ----- ----- %% #
@@ -112,6 +116,8 @@ print("Padgett-Florence-Families: avg shortest path length", graph_list["padgett
 print("Padgett-Florence-Families: diameter", graph_list["padgett_florence_families"]["diameter"])
 print("Padgett-Florence-Families: modularity (Louvain)", graph_list["padgett_florence_families"]["modularity"])
 
+# remove self-loops
+G_unweighted.remove_edges_from(nx.selfloop_edges(G_unweighted))
 nx.write_edgelist(G_unweighted, BASE_PATH / "cleaned" / "padgett_florence_families.txt", data=False)
 
 # %% ----- ----- ----- ----- ----- Banerjee et al. Indian villages all ----- ----- ----- ----- ----- %% #
@@ -160,7 +166,9 @@ for i_v, village in village_list:
     print(f"Village {village}: avg shortest path length", graph_list[f"village_all_{i_v}"]["avg_shortest_path_length"])
     print(f"Village {village}: diameter", graph_list[f"village_all_{i_v}"]["diameter"])
 
-    # nx.write_edgelist(G, BASE_PATH / "cleaned" / f"village_all_{i_v}.txt", data=False)
+    # remove self-loops
+    G.remove_edges_from(nx.selfloop_edges(G))
+    nx.write_edgelist(G, BASE_PATH / "cleaned" / f"village_all_{i_v}.txt", data=False)
 
 # %% ----- ----- ----- ----- ----- Banerjee et al. Indian villages AND ----- ----- ----- ----- ----- %% #
 # village_list = [
@@ -237,7 +245,9 @@ print("email-Eu: avg shortest path length", graph_list["email_eu"]["avg_shortest
 print("email-Eu: diameter", graph_list["email_eu"]["diameter"])
 print("email-Eu: modularity (Louvain)", graph_list["email_eu"]["modularity"])
 
-# nx.write_edgelist(G_unweighted, BASE_PATH / "cleaned" / "email_eu.txt", data=False)
+# remove self-loops
+G_unweighted.remove_edges_from(nx.selfloop_edges(G_unweighted))
+nx.write_edgelist(G_unweighted, BASE_PATH / "cleaned" / "email_eu.txt", data=False)
 
 # %% ----- ----- ----- ----- ----- facebook ----- ----- ----- ----- ----- %% #
 # # Read the file manually
@@ -319,7 +329,9 @@ for i_fb, fb_separate in fb_separate_list:
     print(f"facebook {i_fb}: diameter", graph_list[f"facebook_{i_fb}"]["diameter"])
     print(f"facebook {i_fb}: modularity (Louvain)", graph_list[f"facebook_{i_fb}"]["modularity"])
 
-    # nx.write_edgelist(G_unweighted, BASE_PATH / "cleaned" / f"facebook_{i_fb}.txt", data=False)
+    # remove self-loops
+    G_unweighted.remove_edges_from(nx.selfloop_edges(G_unweighted))
+    nx.write_edgelist(G_unweighted, BASE_PATH / "cleaned" / f"facebook_{i_fb}.txt", data=False)
 
 # %% ----- ----- ----- ----- ----- retweet copen ----- ----- ----- ----- ----- %% #
 # G = nx.read_edgelist(BASE_PATH / "orgdata" / "retweet" / "rt-twitter-copen.mtx")
@@ -360,7 +372,9 @@ print("retweet copen: avg shortest path length", graph_list["retweet_copen"]["av
 print("retweet copen: diameter", graph_list["retweet_copen"]["diameter"])
 print("retweet copen: modularity (Louvain)", graph_list["retweet_copen"]["modularity"])
 
-# nx.write_edgelist(G_max_connected, BASE_PATH / "cleaned" / "retweet_copen.txt", data=False)
+# remove self-loops
+G_unweighted.remove_edges_from(nx.selfloop_edges(G_unweighted))
+nx.write_edgelist(G_max_connected, BASE_PATH / "cleaned" / "retweet_copen.txt", data=False)
 
 # %%
 
