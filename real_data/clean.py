@@ -3,12 +3,14 @@ import networkx as nx
 import pandas as pd
 import numpy as np
 from pathlib import Path
+import os
 
 # %%
 BASE_PATH = Path("/home/zihangw/EvoComm/real_data/")
 
 # %%
 graph_list = {}
+
 # %% ----- ----- ----- ----- ----- Hunter gather forest ----- ----- ----- ----- ----- %% #
 # Read the file manually
 df = pd.read_csv(BASE_PATH / "orgdata" / "hunter-gatherer-data" / "aax5913_data_file_s3.txt", sep=" ", names=["source", "target", "weight"])
@@ -333,48 +335,106 @@ for i_fb, fb_separate in fb_separate_list:
     G_unweighted.remove_edges_from(nx.selfloop_edges(G_unweighted))
     nx.write_edgelist(G_unweighted, BASE_PATH / "cleaned" / f"facebook_{i_fb}.txt", data=False)
 
+# %% ----- ----- ----- ----- ----- twitter separate ----- ----- ----- ----- ----- %% #
+twitter_all = os.listdir(BASE_PATH / "orgdata" / "twitter" / "twitter")
+twitter_separate_list = [
+    (int(file.split(".")[0]), file)
+    for file in twitter_all if file.endswith(".edges")
+]
+
+count = 0
+for i_tw, twitter_separate in twitter_separate_list:
+    df = pd.read_csv(BASE_PATH / "orgdata" / "twitter" / "twitter" / f"{twitter_separate}", sep=" ", names=["nodeID1", "nodeID2"])
+
+    # Build the graph
+    G_unweighted = nx.from_pandas_edgelist(df, "nodeID1", "nodeID2") # , edge_attr="weight")
+
+    # if not nx.is_connected(G_unweighted):
+    G_max_connected_list = max(nx.connected_components(G_unweighted), key=len)
+    G_max_connected = G_unweighted.subgraph(G_max_connected_list)
+    rename_list = [i for i in range(len(list(G_max_connected.nodes)))]
+    mapping = dict(zip(list(G_max_connected.nodes), rename_list))
+    G_max_connected = nx.relabel_nodes(G_max_connected, mapping)
+    G_unweighted = G_max_connected
+
+    if not ((len(list(G_unweighted.nodes))) == max(list(G_unweighted.nodes)) + 1) or (min(list(G_unweighted.nodes)) != 0):
+        raise ValueError("Node labels are not starting from 0 to N-1")
+
+    if G_unweighted.number_of_nodes() < 150:
+        continue
+
+    if count >= 5:
+        break
+    count += 1
+
+    graph_list[f"twitter_{i_tw}"] = {
+        "time": 6,
+        "num_nodes": G_unweighted.number_of_nodes(),
+        "num_edges": G_unweighted.number_of_edges(),
+        "avg_degree": np.mean([d for n, d in G_unweighted.degree()]),
+        "avg_clustering": nx.average_clustering(G_unweighted),
+        "assortativity": nx.degree_assortativity_coefficient(G_unweighted),
+        "avg_shortest_path_length": nx.average_shortest_path_length(G_unweighted),
+        "diameter": nx.diameter(G_unweighted),
+        "modularity": nx.community.quality.modularity(G_unweighted, nx.community.louvain_communities(G_unweighted)),
+    }
+
+    print(f"twitter {i_tw}: is connected?", nx.is_connected(G_unweighted))
+    print(f"twitter {i_tw}: num nodes", graph_list[f"twitter_{i_tw}"]["num_nodes"])
+    print(f"twitter {i_tw}: num edges", graph_list[f"twitter_{i_tw}"]["num_edges"])
+    print(f"twitter {i_tw}: avg degree", graph_list[f"twitter_{i_tw}"]["avg_degree"])
+    print(f"twitter {i_tw}: avg clustering", graph_list[f"twitter_{i_tw}"]["avg_clustering"])
+    print(f"twitter {i_tw}: assortativity", graph_list[f"twitter_{i_tw}"]["assortativity"])
+    print(f"twitter {i_tw}: avg shortest path length", graph_list[f"twitter_{i_tw}"]["avg_shortest_path_length"])
+    print(f"twitter {i_tw}: diameter", graph_list[f"twitter_{i_tw}"]["diameter"])
+    print(f"twitter {i_tw}: modularity (Louvain)", graph_list[f"twitter_{i_tw}"]["modularity"])
+
+    # remove self-loops
+    G_unweighted.remove_edges_from(nx.selfloop_edges(G_unweighted))
+    nx.write_edgelist(G_unweighted, BASE_PATH / "cleaned" / f"twitter_{i_tw}.txt", data=False)
+
 # %% ----- ----- ----- ----- ----- retweet copen ----- ----- ----- ----- ----- %% #
-# G = nx.read_edgelist(BASE_PATH / "orgdata" / "retweet" / "rt-twitter-copen.mtx")
-df = pd.read_csv(BASE_PATH / "orgdata" / "retweet" / "rt-twitter-copen.mtx", sep=" ", skiprows=2, names=["nodeID1", "nodeID2"])
+# # G = nx.read_edgelist(BASE_PATH / "orgdata" / "retweet" / "rt-twitter-copen.mtx")
+# df = pd.read_csv(BASE_PATH / "orgdata" / "retweet" / "rt-twitter-copen.mtx", sep=" ", skiprows=2, names=["nodeID1", "nodeID2"])
 
-# Build the graph
-G_unweighted = nx.from_pandas_edgelist(df, "nodeID1", "nodeID2") # , edge_attr="weight")
-# if not nx.is_connected(G_unweighted):
-G_max_connected_list = max(nx.connected_components(G_unweighted), key=len)
-G_max_connected = G_unweighted.subgraph(G_max_connected_list)
-rename_list = [i for i in range(len(list(G_max_connected.nodes)))]
-mapping = dict(zip(list(G_max_connected.nodes), rename_list))
-G_max_connected = nx.relabel_nodes(G_max_connected, mapping)
-G_unweighted = G_max_connected
+# # Build the graph
+# G_unweighted = nx.from_pandas_edgelist(df, "nodeID1", "nodeID2") # , edge_attr="weight")
+# # if not nx.is_connected(G_unweighted):
+# G_max_connected_list = max(nx.connected_components(G_unweighted), key=len)
+# G_max_connected = G_unweighted.subgraph(G_max_connected_list)
+# rename_list = [i for i in range(len(list(G_max_connected.nodes)))]
+# mapping = dict(zip(list(G_max_connected.nodes), rename_list))
+# G_max_connected = nx.relabel_nodes(G_max_connected, mapping)
+# G_unweighted = G_max_connected
 
-if not ((len(list(G_unweighted.nodes))) == max(list(G_unweighted.nodes)) + 1) or (min(list(G_unweighted.nodes)) != 0):
-    raise ValueError("Node labels are not starting from 0 to N-1")
+# if not ((len(list(G_unweighted.nodes))) == max(list(G_unweighted.nodes)) + 1) or (min(list(G_unweighted.nodes)) != 0):
+#     raise ValueError("Node labels are not starting from 0 to N-1")
 
-graph_list["retweet_copen"] = {
-    "time": 6,
-    "num_nodes": G_unweighted.number_of_nodes(),
-    "num_edges": G_unweighted.number_of_edges(),
-    "avg_degree": np.mean([d for n, d in G_unweighted.degree()]),
-    "avg_clustering": nx.average_clustering(G_unweighted),
-    "assortativity": nx.degree_assortativity_coefficient(G_unweighted),
-    "avg_shortest_path_length": nx.average_shortest_path_length(G_unweighted),
-    "diameter": nx.diameter(G_unweighted),
-    "modularity": nx.community.quality.modularity(G_unweighted, nx.community.louvain_communities(G_unweighted)),
-}
+# graph_list["retweet_copen"] = {
+#     "time": 6,
+#     "num_nodes": G_unweighted.number_of_nodes(),
+#     "num_edges": G_unweighted.number_of_edges(),
+#     "avg_degree": np.mean([d for n, d in G_unweighted.degree()]),
+#     "avg_clustering": nx.average_clustering(G_unweighted),
+#     "assortativity": nx.degree_assortativity_coefficient(G_unweighted),
+#     "avg_shortest_path_length": nx.average_shortest_path_length(G_unweighted),
+#     "diameter": nx.diameter(G_unweighted),
+#     "modularity": nx.community.quality.modularity(G_unweighted, nx.community.louvain_communities(G_unweighted)),
+# }
 
-print("retweet copen: is connected?", nx.is_connected(G_unweighted))
-print("retweet copen: num nodes", graph_list["retweet_copen"]["num_nodes"])
-print("retweet copen: num edges", graph_list["retweet_copen"]["num_edges"])
-print("retweet copen: avg degree", graph_list["retweet_copen"]["avg_degree"])
-print("retweet copen: avg clustering", graph_list["retweet_copen"]["avg_clustering"])
-print("retweet copen: assortativity", graph_list["retweet_copen"]["assortativity"])
-print("retweet copen: avg shortest path length", graph_list["retweet_copen"]["avg_shortest_path_length"])
-print("retweet copen: diameter", graph_list["retweet_copen"]["diameter"])
-print("retweet copen: modularity (Louvain)", graph_list["retweet_copen"]["modularity"])
+# print("retweet copen: is connected?", nx.is_connected(G_unweighted))
+# print("retweet copen: num nodes", graph_list["retweet_copen"]["num_nodes"])
+# print("retweet copen: num edges", graph_list["retweet_copen"]["num_edges"])
+# print("retweet copen: avg degree", graph_list["retweet_copen"]["avg_degree"])
+# print("retweet copen: avg clustering", graph_list["retweet_copen"]["avg_clustering"])
+# print("retweet copen: assortativity", graph_list["retweet_copen"]["assortativity"])
+# print("retweet copen: avg shortest path length", graph_list["retweet_copen"]["avg_shortest_path_length"])
+# print("retweet copen: diameter", graph_list["retweet_copen"]["diameter"])
+# print("retweet copen: modularity (Louvain)", graph_list["retweet_copen"]["modularity"])
 
-# remove self-loops
-G_unweighted.remove_edges_from(nx.selfloop_edges(G_unweighted))
-nx.write_edgelist(G_max_connected, BASE_PATH / "cleaned" / "retweet_copen.txt", data=False)
+# # remove self-loops
+# G_unweighted.remove_edges_from(nx.selfloop_edges(G_unweighted))
+# nx.write_edgelist(G_max_connected, BASE_PATH / "cleaned" / "retweet_copen.txt", data=False)
 
 # %%
 
