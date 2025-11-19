@@ -15,7 +15,7 @@ struct Config {
     int sound;
     int n_languages = 0;
     int sample_times = 10;
-    bool self_communication = true;
+    bool self_communication = false;
     double temperature = 1.0;
     int _log_every = 100; // NEW: logging cadence
 };
@@ -142,9 +142,9 @@ void SimulationGraph::assign_fitness() {
         double total_payoff = 0.0;
         for (int j = 0; j < graph.degrees[i]; ++j) {
             int neighbor_id = graph.edgelist[i][j];
-            total_payoff += payoff_matrix[i][neighbor_id];
+            total_payoff += payoff_matrix[i][neighbor_id] + payoff_matrix[neighbor_id][i];
         }
-        fitness_vector[i] = total_payoff / double(graph.degrees[i]);
+        fitness_vector[i] = total_payoff / double(graph.degrees[i]) / 2;
         languages[i].fitness = fitness_vector[i];
     }
 }

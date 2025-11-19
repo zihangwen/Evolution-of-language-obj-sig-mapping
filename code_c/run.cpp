@@ -1,8 +1,9 @@
 #include <iostream>
 #include <iomanip>
 #include <fstream>
-#include "simulation.hpp"
 #include <filesystem>
+
+#include "simulation.hpp"
 
 using namespace std;
 
@@ -66,9 +67,7 @@ int main(int argc, char **argv) {
         string graph_name = graph_path.substr(graph_path.find_last_of("/\\") + 1, graph_path.find_last_of(".") - graph_path.find_last_of("/\\") - 1);
         string out_path = out_path_base + "/" + model_name + "/" + graph_base + "/" + graph_name;
 
-        std::filesystem::create_directories(
-            out_path_base + "/" + model_name + "/" + graph_base + "/" + graph_name
-        );
+        std::filesystem::create_directories(out_path);
 
         std::ostringstream temp_ss;
         temp_ss.setf(std::ios::fixed);
