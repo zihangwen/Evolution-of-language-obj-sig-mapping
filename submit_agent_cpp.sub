@@ -1,0 +1,30 @@
+universe = vanilla
+executable = run_agent_cpp.sh
+
+param_file = evolve_real_clean.txt
+results_dir = results_evolve
+
+arguments = $(process) $(param_file) $(results_dir)
+
+output  = log/job.$(cluster).$(process).out
+error   = log/job.$(cluster).$(process).error
+log     = log/job.$(cluster).$(process).log
+
+should_transfer_files   = Yes
+when_to_transfer_output = ON_EXIT
+notification = never
+transfer_input_files = code_c, real_data/cleaned, param_space/$(param_file)
+# 
+# transfer_output_remaps = "dual_all_cond_skip.txt = result_analytics/dual_all_cond_skip.txt"
+transfer_output_files = $(results_dir)
+
+# requirements   = (OSGVO_OS_STRING == "RHEL 8") && (HAS_AVX2 == True) # Deprecated
+# Requirements    = HAS_SINGULARITY == TRUE
++SingularityImage = "/cvmfs/singularity.opensciencegrid.org/htc/rocky:8"
+requirements = True
+
+request_cpus    = 1
+request_memory  = 1GB
+request_disk    = 5GB
+
+queue 9000
