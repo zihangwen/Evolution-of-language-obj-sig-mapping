@@ -12,15 +12,17 @@ import networkx as nx
 BASE_PATH = Path("/home/zihangw/EvoComm")
 
 # %%
-param_file = BASE_PATH / "param_space" / "invade_param_demes_multi_ns.txt"
+param_file = BASE_PATH / "param_space" / "invade_param_demes_fix_popsize.txt"
 out_path_base = BASE_PATH / "results_invade"
-combined_name = BASE_PATH / "results_invade_combined" / "invade_param_demes_multi_ns.csv"
-graph_info_path = BASE_PATH / "results_invade_combined" / "invade_param_demes_multi_ns_info.csv"
+combined_name = BASE_PATH / "results_invade_combined" / "invade_param_demes_fix_popsize.csv"
+graph_info_path = BASE_PATH / "results_invade_combined" / "invade_param_demes_fix_popsize_info.csv"
 
 with open(param_file, "r") as f:
     param_sim = f.readlines()
 param_sim = [x.strip() for x in param_sim]
 param_sim = [x.split(" ") for x in param_sim]
+
+pop_size_select = 100
 
 # %%
 df_all = pd.DataFrame()
@@ -32,6 +34,24 @@ for param in param_sim:
     out_path = out_path_base / graph_base / graph_name
     if not out_path.exists():
         print(f"Path {out_path} does not exist, skipping.")
+        continue
+
+    if "wm" in graph_name:
+        num_demes = 1
+        num_edge_added = 0
+        beta = 0
+        pop_size = int(graph_base.split("_")[-1])
+        deme_size = pop_size
+        rep = 0
+    else:
+        num_demes = int(graph_name.split("ndeme")[-1].split("_")[0])
+        num_edge_added = int(graph_name.split("edge")[-1].split("_")[0])
+        beta = int(graph_name.split("beta")[-1].split("_")[0])
+        pop_size = int(graph_base.split("pop")[-1])
+        deme_size = pop_size // num_demes
+        rep = int(graph_name.split("rep")[-1])
+    
+    if pop_size != pop_size_select:
         continue
 
     files = os.listdir(out_path)
@@ -56,8 +76,16 @@ for param in param_sim:
 
     df_grouped["pfix"] = df_grouped["fixation_count"] / df_grouped["num_trials"]
     df_grouped["pco_exist"] = df_grouped["co_existence_count"] / df_grouped["num_trials"]
-    df_grouped["graph_path"] = graph_path
-    df_grouped["graph_folder"] = graph_folder
+    # df_grouped["graph_folder"] = graph_folder
+
+    df_grouped["num_demes"] = num_demes
+    df_grouped["deme_size"] = deme_size
+    df_grouped["num_edge_added"] = num_edge_added
+    df_grouped["beta"] = beta
+    # df_grouped["pop_size"] = pop_size
+    df_grouped["graph_name"] = graph_name
+
+    df_grouped["graph_base"] = graph_folder.split("_")[0]
 
     # G = nx.read_edgelist(BASE_PATH / graph_path, nodetype=int)
     # mean_degree = sum(dict(G.degree()).values()) / G.number_of_nodes()
@@ -75,17 +103,24 @@ for param in param_sim:
     # transitivity = nx.transitivity(G)
 
     # df_grouped["graph_mean_degree"] = mean_degree
-    # df_grouped["Algebraic connectivity"] = lambda_2
+    # df_grouped["lambda_2"] = lambda_2
     # df_grouped["transitivity"] = transitivity
 
     df_all = pd.concat([df_all, df_grouped], ignore_index=True)
 
+# df_all = df_all.drop(columns="fixation_time_weighted_sum")
+# df_all["num_demes"] = df_all["graph_folder"].apply(lambda x: int(x.split("_")[1].split("demes")[1]))
+# df_all["deme_size"] = df_all["graph_folder"].apply(lambda x: int(x.split("_")[2].split("size")[1]))
+# df_all["num_edge_added"] = df_all["graph_name"].apply(lambda x: int(x.split("_")[2]))
+# df_all["beta"] = df_all["graph_name"].apply(lambda x: float(x.split("_")[3].split("m")[-1]))
+# df_all["graph_rep"] = df_all["graph_name"].apply(lambda x: int(x.split("_")[4]))
+
 df_all = df_all.drop(columns="fixation_time_weighted_sum")
-df_all["num_demes"] = df_all["graph_folder"].apply(lambda x: int(x.split("_")[1].split("demes")[1]))
-df_all["deme_size"] = df_all["graph_folder"].apply(lambda x: int(x.split("_")[2].split("size")[1]))
-df_all["num_edge_added"] = df_all["graph_name"].apply(lambda x: int(x.split("_")[2]))
-df_all["beta"] = df_all["graph_name"].apply(lambda x: float(x.split("_")[3].split("m")[-1]))
-df_all["graph_rep"] = df_all["graph_name"].apply(lambda x: int(x.split("_")[4]))
+# df_all["num_demes"] = df_all["graph_folder"].apply(lambda x: int(x.split("_")[1].split("demes")[1]))
+# df_all["deme_size"] = df_all["graph_folder"].apply(lambda x: int(x.split("_")[2].split("size")[1]))
+# df_all["num_edge_added"] = df_all["graph_name"].apply(lambda x: int(x.split("_")[2]))
+# df_all["beta"] = df_all["graph_name"].apply(lambda x: float(x.split("_")[3].split("m")[-1]))
+# df_all["graph_rep"] = df_all["graph_name"].apply(lambda x: int(x.split("_")[4]))
 
 combined_name.parent.mkdir(parents=True, exist_ok=True)  # Ensure the directory exists
 df_all.to_csv(combined_name, index=False, sep="\t")
@@ -117,7 +152,6 @@ df_all.to_csv(combined_name, index=False, sep="\t")
 #     if not out_path.exists():
 #         print(f"Path {out_path} does not exist, skipping.")
 #         continue
-
 
 #     G = nx.read_edgelist(BASE_PATH / graph_path, nodetype=int)
 #     mean_degree = sum(dict(G.degree()).values()) / G.number_of_nodes()
@@ -154,16 +188,16 @@ for param in param_sim:
     print(param)
     graph_path = param[2]
     graph_base = os.path.dirname(graph_path)
-    graph_type_base = graph_base.split("/")[1]
     graph_name = os.path.basename(graph_path).split(".")[0]
     # out_path = out_path_base / graph_base / graph_name
     # if not out_path.exists():
     #     print(f"Path {out_path} does not exist, skipping.")
     #     continue
 
-    G = nx.read_edgelist(BASE_PATH / "networks_archieve/bottleneck_notfix_pop_size" / graph_type_base / (graph_name + ".txt"), nodetype=int)
-    
+    G = nx.read_edgelist(BASE_PATH / graph_path, nodetype=int)
     pop_size = G.number_of_nodes()
+    if pop_size != pop_size_select:
+        continue
 
     mean_degree = sum(dict(G.degree()).values()) / G.number_of_nodes()
     average_clustering = nx.average_clustering(G)
@@ -174,7 +208,6 @@ for param in param_sim:
     connectivity = nx.algebraic_connectivity(G)
     new_row = pd.DataFrame({
         "graph_name": [graph_name],
-        "graph_path": [graph_path],
         "num_nodes": [G.number_of_nodes()],
         "num_edges": [G.number_of_edges()],
         "graph_mean_degree": [mean_degree],
@@ -205,7 +238,5 @@ for param in param_sim:
 
 graph_info_path.parent.mkdir(parents=True, exist_ok=True)  # Ensure the directory exists
 df_graph.to_csv(graph_info_path, index=False, sep="\t")
-
-
 
 # %%
