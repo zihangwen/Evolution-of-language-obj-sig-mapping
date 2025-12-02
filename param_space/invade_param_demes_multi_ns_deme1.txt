@@ -1,0 +1,3 @@
+5 5 networks/bottleneck_demes1_size5/bn_1_0_m0_0.txt 10000
+5 5 networks/bottleneck_demes1_size10/bn_1_0_m0_0.txt 10000
+5 5 networks/bottleneck_demes1_size20/bn_1_0_m0_0.txt 10000
