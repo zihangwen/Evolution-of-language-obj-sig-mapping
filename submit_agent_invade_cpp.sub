@@ -1,8 +1,8 @@
 universe = vanilla
-executable = run_agent_cpp.sh
+executable = run_agent_invade_cpp.sh
 
-param_file = evolve_param_demesconn_edges_supp.txt
-results_dir = results_evolve_cpp
+param_file = invade_param_demesconn_edges_supp.txt
+results_dir = results_invade_cpp
 
 arguments = $(process) $(param_file) $(results_dir)
 
