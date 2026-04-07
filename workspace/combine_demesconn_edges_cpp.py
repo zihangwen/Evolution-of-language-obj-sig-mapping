@@ -16,7 +16,7 @@ param_file = BASE_PATH / "param_space" / "invade_param_demesconn_edges_supp.txt"
 out_path_base = BASE_PATH / "results_invade_cpp"
 combined_name = BASE_PATH / "results_cpp_combined" / "param_demesconn_edges_invade_supp.csv"
 
-param_file_e = BASE_PATH / "param_space" / "evolve_param_demesconn_edges_supp.txt"
+param_file_e = BASE_PATH / "param_space" / "evolve_param_demes_multi_ns.txt"
 out_path_base_e = BASE_PATH / "results_evolve_cpp"
 combined_name_e = BASE_PATH / "results_cpp_combined" / "param_demesconn_edges_evolve_supp.csv"
 
