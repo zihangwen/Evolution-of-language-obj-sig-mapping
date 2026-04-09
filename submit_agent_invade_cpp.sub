@@ -1,8 +1,8 @@
 universe = vanilla
-executable = run_agent_invade_cpp.sh
+executable = run_agent_invade_eq_cpp.sh
 
-param_file = invade_param_demesconn_edges_supp.txt
-results_dir = results_invade_cpp
+param_file = invade_param_eq.txt
+results_dir = results_invade_eq_cpp
 
 arguments = $(process) $(param_file) $(results_dir)
 
@@ -27,4 +27,4 @@ request_cpus    = 1
 request_memory  = 1GB
 request_disk    = 5GB
 
-queue 2000
+queue 6400
