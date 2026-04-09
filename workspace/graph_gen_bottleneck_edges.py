@@ -1,6 +1,5 @@
 # %%
 import networkx as nx
-import numpy as np
 import os
 import copy
 import random
@@ -77,23 +76,14 @@ for num_demes in num_demes_list:
         pairs = list(graph_connection_template.edges)
         # pairs = list(pairwise(dim_index_list))
         for num_edges in num_edges_list:
-            # for beta in beta_list:
-            beta = 0
             count_m = 0
             G = copy.deepcopy(G_base)
-            for i_edge in range(num_edges):
-                degree_list = [np.array(G_i.degree())[:,1].astype(float) for G_i in G_list]
-                prob_list = [degree ** beta for degree in degree_list]
-                prob_list = [prob / np.sum(prob) for prob in prob_list]
-
-                new_edge_list = []
-                for dim_1, dim_2 in pairs:
-                    node_1 = np.random.choice(node_list[dim_1], 1, False, prob_list[dim_1])[0]
-                    node_2 = np.random.choice(node_list[dim_2], 1, False, prob_list[dim_2])[0]
-                    new_edge_list.append((node_1, node_2))
-                
-                # print(new_edge_list)
-                G.add_edges_from(new_edge_list)
+            for dim_1, dim_2 in pairs:
+                nodes_1 = list(node_list[dim_1])
+                nodes_2 = list(node_list[dim_2])
+                candidates = [(n1, n2) for n1 in nodes_1 for n2 in nodes_2]
+                chosen = random.sample(candidates, min(num_edges, len(candidates)))
+                G.add_edges_from(chosen)
             print(nx.is_connected(G))
             nx.write_edgelist(G, os.path.join(output_path,f"bn_ndeme{num_demes}_demeconn{conn}_edge{num_edges}_rep{str(count_m)}.txt"), data=False)
 
@@ -126,23 +116,14 @@ for num_demes in num_demes_list:
         pairs = list(graph_connection_template.edges)
         # pairs = list(pairwise(dim_index_list))
         for num_edges in num_edges_list:
-            # for beta in beta_list:
-            beta = 0
             count_m = 0
             G = copy.deepcopy(G_base)
-            for i_edge in range(num_edges):
-                degree_list = [np.array(G_i.degree())[:,1].astype(float) for G_i in G_list]
-                prob_list = [degree ** beta for degree in degree_list]
-                prob_list = [prob / np.sum(prob) for prob in prob_list]
-
-                new_edge_list = []
-                for dim_1, dim_2 in pairs:
-                    node_1 = np.random.choice(node_list[dim_1], 1, False, prob_list[dim_1])[0]
-                    node_2 = np.random.choice(node_list[dim_2], 1, False, prob_list[dim_2])[0]
-                    new_edge_list.append((node_1, node_2))
-                
-                # print(new_edge_list)
-                G.add_edges_from(new_edge_list)
+            for dim_1, dim_2 in pairs:
+                nodes_1 = list(node_list[dim_1])
+                nodes_2 = list(node_list[dim_2])
+                candidates = [(n1, n2) for n1 in nodes_1 for n2 in nodes_2]
+                chosen = random.sample(candidates, min(num_edges, len(candidates)))
+                G.add_edges_from(chosen)
             print(nx.is_connected(G))
             nx.write_edgelist(G, os.path.join(output_path,f"bn_ndeme{num_demes}_{diy_graph}_edge{num_edges}_rep{str(count_m)}.txt"), data=False)
 
